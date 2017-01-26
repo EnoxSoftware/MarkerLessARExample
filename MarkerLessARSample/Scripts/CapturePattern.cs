@@ -16,10 +16,6 @@ namespace MarkerLessARSample
     public class CapturePattern : MonoBehaviour
     {
 
-        /// <summary>
-        /// The colors.
-        /// </summary>
-        Color32[] colors;
 
         /// <summary>
         /// The texture.
@@ -59,7 +55,7 @@ namespace MarkerLessARSample
         // Use this for initialization
         void Start ()
         {
-            Utils.setDebugMode(true);
+//            Utils.setDebugMode(true);
 
             using (Mat patternMat = Imgcodecs.imread (Application.persistentDataPath + "/patternImg.jpg")) {
                 if (patternMat.empty ()) {
@@ -70,7 +66,7 @@ namespace MarkerLessARSample
                 
                     Imgproc.cvtColor (patternMat, patternMat, Imgproc.COLOR_BGR2RGB);
                 
-                    Texture2D patternTexture = new Texture2D (patternMat.cols (), patternMat.rows (), TextureFormat.RGBA32, false);
+                    Texture2D patternTexture = new Texture2D (patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
 
                     Utils.matToTexture2D (patternMat, patternTexture);
 
@@ -100,29 +96,24 @@ namespace MarkerLessARSample
 
             Mat webCamTextureMat = webCamTextureToMatHelper.GetMat ();
                     
-            colors = new Color32[webCamTextureMat.cols () * webCamTextureMat.rows ()];
-            texture = new Texture2D (webCamTextureMat.cols (), webCamTextureMat.rows (), TextureFormat.RGBA32, false);
+            texture = new Texture2D (webCamTextureMat.width(), webCamTextureMat.height(), TextureFormat.RGBA32, false);
 
-            rgbMat = new Mat (webCamTextureMat.cols (), webCamTextureMat.rows (), CvType.CV_8UC3);
+            rgbMat = new Mat (webCamTextureMat.rows (), webCamTextureMat.cols (), CvType.CV_8UC3);
                     
 
                     
-            gameObject.transform.localScale = new Vector3 (webCamTextureMat.cols (), webCamTextureMat.rows (), 1);
+            gameObject.transform.localScale = new Vector3 (webCamTextureMat.width(), webCamTextureMat.height(), 1);
             
             Debug.Log ("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
 
                     
-            float width = 0;
-            float height = 0;
-                        
-            width = gameObject.transform.localScale.x;
-            height = gameObject.transform.localScale.y;          
+            float width = webCamTextureMat.width ();
+            float height = webCamTextureMat.height ();
 
             float widthScale = (float)Screen.width / width;
             float heightScale = (float)Screen.height / height;
             if (widthScale < heightScale) {
                 Camera.main.orthographicSize = (width * (float)Screen.height / (float)Screen.width) / 2;
-
             } else {
                 Camera.main.orthographicSize = height / 2;
             }
@@ -138,9 +129,9 @@ namespace MarkerLessARSample
             }               
 
 
-            int patternWidth = (int)(Mathf.Min (webCamTextureMat.cols (), webCamTextureMat.rows ()) * 0.8f);
+            int patternWidth = (int)(Mathf.Min (webCamTextureMat.width(), webCamTextureMat.height()) * 0.8f);
 
-            patternRect = new OpenCVForUnity.Rect (webCamTextureMat.cols () / 2 - patternWidth / 2, webCamTextureMat.rows () / 2 - patternWidth / 2, patternWidth, patternWidth);
+            patternRect = new OpenCVForUnity.Rect (webCamTextureMat.width() / 2 - patternWidth / 2, webCamTextureMat.height() / 2 - patternWidth / 2, patternWidth, patternWidth);
 
         }
 
@@ -156,11 +147,19 @@ namespace MarkerLessARSample
             }
                         
         }
+
+        /// <summary>
+        /// Raises the web cam texture to mat helper error occurred event.
+        /// </summary>
+        /// <param name="errorCode">Error code.</param>
+        public void OnWebCamTextureToMatHelperErrorOccurred(WebCamTextureToMatHelper.ErrorCode errorCode){
+            Debug.Log ("OnWebCamTextureToMatHelperErrorOccurred " + errorCode);
+        }
         
         // Update is called once per frame
         void Update ()
         {
-            if (webCamTextureToMatHelper.isPlaying () && webCamTextureToMatHelper.didUpdateThisFrame ()) {
+            if (webCamTextureToMatHelper.IsPlaying () && webCamTextureToMatHelper.DidUpdateThisFrame ()) {
                 
                 Mat rgbaMat = webCamTextureToMatHelper.GetMat ();
 
@@ -176,10 +175,7 @@ namespace MarkerLessARSample
                 Imgproc.rectangle (rgbaMat, patternRect.tl (), patternRect.br (), new Scalar (255, 0, 0, 255), 5);
                             
 
-                Utils.matToTexture2D (rgbaMat, texture, colors);
-                
-                gameObject.GetComponent<Renderer> ().material.mainTexture = texture;
-                
+                Utils.matToTexture2D (rgbaMat, texture, webCamTextureToMatHelper.GetBufferColors());
                 
             }
             
@@ -192,7 +188,7 @@ namespace MarkerLessARSample
             detector.Dispose();
             if(keypoints != null)keypoints.Dispose();
 
-            Utils.setDebugMode(false);
+//            Utils.setDebugMode(false);
         }
 
 
@@ -248,7 +244,7 @@ namespace MarkerLessARSample
 
             Mat patternMat = new Mat (rgbMat, patternRect);
 
-            Texture2D patternTexture = new Texture2D (patternMat.cols (), patternMat.rows (), TextureFormat.RGBA32, false);
+            Texture2D patternTexture = new Texture2D (patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
             
             Utils.matToTexture2D (patternMat, patternTexture);
             

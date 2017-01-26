@@ -161,15 +161,33 @@ namespace MarkerLessARSample
             ARGameObject.gameObject.SetActive (false);
 
 
+
             webCamTextureToMatHelper = gameObject.GetComponent<WebCamTextureToMatHelper> ();
 
             patternMat = Imgcodecs.imread (Application.persistentDataPath + "/patternImg.jpg");
+
             if (patternMat.empty ()) {
 
                 OnPatternCaptureButton ();
             } else {
             
                 Imgproc.cvtColor (patternMat, patternMat, Imgproc.COLOR_BGR2RGB);
+
+                Texture2D patternTexture = new Texture2D (patternMat.width (), patternMat.height (), TextureFormat.RGBA32, false);
+                Utils.matToTexture2D (patternMat, patternTexture);
+                Debug.Log ("patternMat dst ToString " + patternMat.ToString ());
+                
+                patternRawImage.texture = patternTexture;
+                patternRawImage.rectTransform.localScale = new Vector3 (1.0f, (float)patternMat.height () / (float)patternMat.width (), 1.0f);
+                
+                pattern = new Pattern ();
+                patternTrackingInfo = new PatternTrackingInfo ();
+                
+                patternDetector = new PatternDetector (null, null, null, true);
+                
+                patternDetector.buildPatternFromImage (patternMat, pattern);
+                patternDetector.train (pattern);
+
 
                 webCamTextureToMatHelper.Init ();
             }
@@ -186,14 +204,14 @@ namespace MarkerLessARSample
 
             Mat webCamTextureMat = webCamTextureToMatHelper.GetMat ();
                     
-            texture = new Texture2D (webCamTextureMat.cols (), webCamTextureMat.rows (), TextureFormat.RGBA32, false);
+            texture = new Texture2D (webCamTextureMat.width(), webCamTextureMat.height(), TextureFormat.RGBA32, false);
             gameObject.GetComponent<Renderer> ().material.mainTexture = texture;
 
 
-            grayMat = new Mat (webCamTextureMat.cols (), webCamTextureMat.rows (), CvType.CV_8UC1);
+            grayMat = new Mat (webCamTextureMat.rows (), webCamTextureMat.cols (), CvType.CV_8UC1);
                     
 
-            gameObject.transform.localScale = new Vector3 (webCamTextureMat.cols (), webCamTextureMat.rows (), 1);
+            gameObject.transform.localScale = new Vector3 (webCamTextureMat.width(), webCamTextureMat.height(), 1);
             
             Debug.Log ("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
 
@@ -286,20 +304,6 @@ namespace MarkerLessARSample
                         
 
 
-            Texture2D patternTexture = new Texture2D (patternMat.width (), patternMat.height (), TextureFormat.RGBA32, false);
-            Utils.matToTexture2D (patternMat, patternTexture);
-            Debug.Log ("patternMat dst ToString " + patternMat.ToString ());
-
-            patternRawImage.texture = patternTexture;
-            patternRawImage.rectTransform.localScale = new Vector3 (1.0f, (float)patternMat.height () / (float)patternMat.width (), 1.0f);
-
-            pattern = new Pattern ();
-            patternTrackingInfo = new PatternTrackingInfo ();
-                    
-            patternDetector = new PatternDetector (null, null, null, true);
-                    
-            patternDetector.buildPatternFromImage (patternMat, pattern);
-            patternDetector.train (pattern);
 
 
             //if WebCamera is frontFaceing,flip Mat.
@@ -318,9 +322,6 @@ namespace MarkerLessARSample
             
             if (grayMat != null)
                 grayMat.Dispose ();
-
-            if (patternMat != null)
-                patternMat.Dispose ();
         }
 
         /// <summary>
@@ -334,7 +335,7 @@ namespace MarkerLessARSample
         // Update is called once per frame
         void Update ()
         {
-            if (webCamTextureToMatHelper.isPlaying () && webCamTextureToMatHelper.didUpdateThisFrame ()) {
+            if (webCamTextureToMatHelper.IsPlaying () && webCamTextureToMatHelper.DidUpdateThisFrame ()) {
                 
                 Mat rgbaMat = webCamTextureToMatHelper.GetMat ();
 
@@ -383,6 +384,9 @@ namespace MarkerLessARSample
         void OnDisable ()
         {
             webCamTextureToMatHelper.Dispose ();
+
+            if (patternMat != null)
+                patternMat.Dispose ();
         }
 
 
