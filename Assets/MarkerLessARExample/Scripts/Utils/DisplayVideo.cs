@@ -3,10 +3,10 @@ using System.Collections;
 
 using OpenCVForUnity;
 
-namespace MarkerLessARSample
+namespace MarkerLessARExample
 {
     /// <summary>
-    /// VideoCapture sample.
+    /// VideoCapture example.
     /// </summary>
     public class DisplayVideo : MonoBehaviour
     {

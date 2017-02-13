@@ -1,4 +1,4 @@
-MarkerLess AR Sample
+MarkerLess AR Example
 ====================
 
 Overview
@@ -12,13 +12,13 @@ Setup Tutorial & Demo Video
 Demo
 -----
 - WebGL
-<https://enoxsoftware.github.io/MarkerLessARSample/webgl_sample/index.html>
+<https://enoxsoftware.github.io/MarkerLessARExample/webgl_example/index.html>
 - Android
-<https://play.google.com/store/apps/details?id=com.enoxsoftware.markerlessarsample>
+<https://play.google.com/store/apps/details?id=com.enoxsoftware.markerlessarexample>
 
 Manual
 -----
-[ReadMe.pdf](/MarkerLessARSample/ReadMe.pdf)
+[ReadMe.pdf](/Assets/MarkerLessARExample/ReadMe.pdf)
 
 
 

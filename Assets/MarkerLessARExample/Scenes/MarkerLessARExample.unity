@@ -260,7 +260,7 @@ GameObject:
   - 114: {fileID: 130009891}
   - 114: {fileID: 130009890}
   m_Layer: 5
-  m_Name: WebCamTextureMarkerLessARSample
+  m_Name: WebCamTextureMarkerLessARExample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -345,7 +345,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 29440833}
-        m_MethodName: WebCamTextureMarkerLessARSample
+        m_MethodName: WebCamTextureMarkerLessARExample
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -762,7 +762,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: WebCamTextureMarkerLessARSample
+  m_Text: WebCamTextureMarkerLessARExample
 --- !u!222 &1084706039
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1027,7 +1027,7 @@ GameObject:
   - 114: {fileID: 1867454789}
   - 114: {fileID: 1867454788}
   m_Layer: 5
-  m_Name: Texture2DMarkerLessARSample
+  m_Name: Texture2DMarkerLessARExample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1112,7 +1112,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 29440833}
-        m_MethodName: Texture2DMarkerLessARSample
+        m_MethodName: Texture2DMarkerLessARExample
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1215,7 +1215,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Texture2DMarkerLessARSample
+  m_Text: Texture2DMarkerLessARExample
 --- !u!222 &1869573385
 CanvasRenderer:
   m_ObjectHideFlags: 0
