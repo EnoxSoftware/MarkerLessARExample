@@ -327,7 +327,7 @@ public class PatternDetector
     /// <param name="descriptors">Descriptors.</param>
     bool extractFeatures (Mat image, MatOfKeyPoint keypoints, Mat descriptors)
     {
-        if (image.empty ()) {
+        if (image.total () == 0) {
             return false;
         }
         if (image.channels () != 1) {
@@ -335,11 +335,11 @@ public class PatternDetector
         }
         
         m_detector.detect (image, keypoints);
-        if (keypoints.empty ())
+        if (keypoints.total () == 0)
             return false;
         
         m_extractor.compute (image, keypoints, descriptors);
-        if (keypoints.empty ())
+        if (keypoints.total () == 0)
             return false;
 
 //      Debug.Log ("extractFeatures true");

@@ -58,7 +58,7 @@ namespace MarkerLessARExample
 //            Utils.setDebugMode(true);
 
             using (Mat patternMat = Imgcodecs.imread (Application.persistentDataPath + "/patternImg.jpg")) {
-                if (patternMat.empty ()) {
+                if (patternMat.total () == 0) {
                 
                     patternRawImage.gameObject.SetActive (false);
 
