@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using OpenCVMarkerLessAR;
 
 #if UNITY_5_3 || UNITY_5_3_OR_NEWER
 using UnityEngine.SceneManagement;
@@ -10,36 +11,16 @@ using OpenCVForUnity;
 namespace MarkerLessARExample
 {
     /// <summary>
-    /// Marker Less AR example from WebCamTexture.
-    /// https://github.com/MasteringOpenCV/code/tree/master/Chapter3_MarkerlessAR by using "OpenCV for Unity"
+    /// WebCamTexture Markerless AR Example
+    /// This code is a rewrite of https://github.com/MasteringOpenCV/code/tree/master/Chapter3_MarkerlessAR using "OpenCV for Unity".
     /// </summary>
-    [RequireComponent(typeof(WebCamTextureToMatHelper))]
+    [RequireComponent (typeof(WebCamTextureToMatHelper))]
     public class WebCamTextureMarkerLessARExample : MonoBehaviour
     {
-        /// <summary>
-        /// The pattern mat.
-        /// </summary>
-        Mat patternMat;
-
         /// <summary>
         /// The pattern raw image.
         /// </summary>
         public RawImage patternRawImage;
-
-        /// <summary>
-        /// The texture.
-        /// </summary>
-        Texture2D texture;
-
-        /// <summary>
-        /// The web cam texture to mat helper.
-        /// </summary>
-        WebCamTextureToMatHelper webCamTextureToMatHelper;
-
-        /// <summary>
-        /// The gray mat.
-        /// </summary>
-        Mat grayMat;
 
         /// <summary>
         /// The AR game object.
@@ -50,9 +31,79 @@ namespace MarkerLessARExample
         /// The AR camera.
         /// </summary>
         public Camera ARCamera;
+
+        /// <summary>
+        /// Determines if should move AR camera.
+        /// </summary>
+        public bool shouldMoveARCamera;
+
+        /// <summary>
+        /// Determines if displays axes.
+        /// </summary>
+        public bool displayAxes = false;
         
         /// <summary>
-        /// The cam matrix.
+        /// The display axes toggle.
+        /// </summary>
+        public Toggle displayAxesToggle;
+        
+        /// <summary>
+        /// The axes.
+        /// </summary>
+        public GameObject axes;
+        
+        /// <summary>
+        /// Determines if displays cube.
+        /// </summary>
+        public bool displayCube = false;
+        
+        /// <summary>
+        /// The display cube toggle.
+        /// </summary>
+        public Toggle displayCubeToggle;
+        
+        /// <summary>
+        /// The cube.
+        /// </summary>
+        public GameObject cube;
+        
+        /// <summary>
+        /// Determines if displays video.
+        /// </summary>
+        public bool displayVideo = false;
+        
+        /// <summary>
+        /// The display video toggle.
+        /// </summary>
+        public Toggle displayVideoToggle;
+        
+        /// <summary>
+        /// The video.
+        /// </summary>
+        public GameObject video;
+
+        /// <summary>
+        /// The pattern mat.
+        /// </summary>
+        Mat patternMat;
+
+        /// <summary>
+        /// The texture.
+        /// </summary>
+        Texture2D texture;
+
+        /// <summary>
+        /// The webcam texture to mat helper.
+        /// </summary>
+        WebCamTextureToMatHelper webCamTextureToMatHelper;
+
+        /// <summary>
+        /// The gray mat.
+        /// </summary>
+        Mat grayMat;
+        
+        /// <summary>
+        /// The cameraparam matrix.
         /// </summary>
         Mat camMatrix;
         
@@ -62,29 +113,24 @@ namespace MarkerLessARExample
         MatOfDouble distCoeffs;
         
         /// <summary>
-        /// The invert Y.
+        /// The matrix that inverts the Y axis.
         /// </summary>
         Matrix4x4 invertYM;
         
         /// <summary>
-        /// The transformation m.
+        /// The matrix that inverts the Z axis.
+        /// </summary>
+        Matrix4x4 invertZM;
+
+        /// <summary>
+        /// The transformation matrix.
         /// </summary>
         Matrix4x4 transformationM;
         
         /// <summary>
-        /// The invert Z.
-        /// </summary>
-        Matrix4x4 invertZM;
-        
-        /// <summary>
-        /// The ar m.
+        /// The transformation matrix for AR.
         /// </summary>
         Matrix4x4 ARM;
-        
-        /// <summary>
-        /// The should move AR camera.
-        /// </summary>
-        public bool shouldMoveARCamera;
 
         /// <summary>
         /// The pattern.
@@ -100,67 +146,18 @@ namespace MarkerLessARExample
         /// The pattern detector.
         /// </summary>
         PatternDetector patternDetector;
-
-        /// <summary>
-        /// The is showing axes.
-        /// </summary>
-        public bool isShowingAxes = false;
-
-        /// <summary>
-        /// The is showing axes toggle.
-        /// </summary>
-        public Toggle isShowingAxesToggle;
-
-        /// <summary>
-        /// The axes.
-        /// </summary>
-        public GameObject axes;
-
-        /// <summary>
-        /// The is showing cube.
-        /// </summary>
-        public bool isShowingCube = false;
-
-        /// <summary>
-        /// The is showing cube toggle.
-        /// </summary>
-        public Toggle isShowingCubeToggle;
-
-        /// <summary>
-        /// The cube.
-        /// </summary>
-        public GameObject cube;
-
-        /// <summary>
-        /// The is showing video.
-        /// </summary>
-        public bool isShowingVideo = false;
-
-        /// <summary>
-        /// The is showing video toggle.
-        /// </summary>
-        public Toggle isShowingVideoToggle;
-
-        /// <summary>
-        /// The video.
-        /// </summary>
-        public GameObject video;
-
         
         // Use this for initialization
         void Start ()
         {
-
-            isShowingAxesToggle.isOn = isShowingAxes;
-            axes.SetActive (isShowingAxes);
-            isShowingCubeToggle.isOn = isShowingCube;
-            cube.SetActive (isShowingCube);
-            isShowingVideoToggle.isOn = isShowingVideo;
-            video.SetActive (isShowingVideo);
+            displayAxesToggle.isOn = displayAxes;
+            axes.SetActive (displayAxes);
+            displayCubeToggle.isOn = displayCube;
+            cube.SetActive (displayCube);
+            displayVideoToggle.isOn = displayVideo;
+            video.SetActive (displayVideo);
 
             ARGameObject.gameObject.SetActive (false);
-
-
 
             webCamTextureToMatHelper = gameObject.GetComponent<WebCamTextureToMatHelper> ();
 
@@ -168,13 +165,15 @@ namespace MarkerLessARExample
 
             if (patternMat.total () == 0) {
 
-                OnPatternCaptureButton ();
+                OnCapturePatternButtonClick ();
             } else {
             
                 Imgproc.cvtColor (patternMat, patternMat, Imgproc.COLOR_BGR2RGB);
 
                 Texture2D patternTexture = new Texture2D (patternMat.width (), patternMat.height (), TextureFormat.RGBA32, false);
-                Utils.matToTexture2D (patternMat, patternTexture);
+
+                //To reuse mat, set the flipAfter flag to true.
+                Utils.matToTexture2D (patternMat, patternTexture, true, 0, true);
                 Debug.Log ("patternMat dst ToString " + patternMat.ToString ());
                 
                 patternRawImage.texture = patternTexture;
@@ -189,32 +188,29 @@ namespace MarkerLessARExample
                 patternDetector.train (pattern);
 
 
-                webCamTextureToMatHelper.Init ();
+                webCamTextureToMatHelper.Initialize ();
             }
-
         }
 
         /// <summary>
-        /// Raises the web cam texture to mat helper inited event.
+        /// Raises the web cam texture to mat helper initialized event.
         /// </summary>
-        public void OnWebCamTextureToMatHelperInited ()
+        public void OnWebCamTextureToMatHelperInitialized ()
         {
-            Debug.Log ("OnWebCamTextureToMatHelperInited");
-
+            Debug.Log ("OnWebCamTextureToMatHelperInitialized");
 
             Mat webCamTextureMat = webCamTextureToMatHelper.GetMat ();
                     
-            texture = new Texture2D (webCamTextureMat.width(), webCamTextureMat.height(), TextureFormat.RGBA32, false);
+            texture = new Texture2D (webCamTextureMat.width (), webCamTextureMat.height (), TextureFormat.RGBA32, false);
             gameObject.GetComponent<Renderer> ().material.mainTexture = texture;
 
 
             grayMat = new Mat (webCamTextureMat.rows (), webCamTextureMat.cols (), CvType.CV_8UC1);
                     
 
-            gameObject.transform.localScale = new Vector3 (webCamTextureMat.width(), webCamTextureMat.height(), 1);
+            gameObject.transform.localScale = new Vector3 (webCamTextureMat.width (), webCamTextureMat.height (), 1);
             
             Debug.Log ("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
-
 
 
             float width = webCamTextureMat.width ();
@@ -290,10 +286,8 @@ namespace MarkerLessARExample
             } else {
                 ARCamera.fieldOfView = (float)(fovy [0] * fovYScale);
             }
-                        
-                        
-                        
-                        
+
+
             transformationM = new Matrix4x4 ();
                         
             invertYM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, -1, 1));
@@ -301,16 +295,12 @@ namespace MarkerLessARExample
                         
             invertZM = Matrix4x4.TRS (Vector3.zero, Quaternion.identity, new Vector3 (1, 1, -1));
             Debug.Log ("invertZM " + invertZM.ToString ());
-                        
-
-
 
 
             //if WebCamera is frontFaceing,flip Mat.
             if (webCamTextureToMatHelper.GetWebCamDevice ().isFrontFacing) {
                 webCamTextureToMatHelper.flipHorizontal = true;
-            }               
-                           
+            }
         }
 
         /// <summary>
@@ -328,7 +318,8 @@ namespace MarkerLessARExample
         /// Raises the web cam texture to mat helper error occurred event.
         /// </summary>
         /// <param name="errorCode">Error code.</param>
-        public void OnWebCamTextureToMatHelperErrorOccurred(WebCamTextureToMatHelper.ErrorCode errorCode){
+        public void OnWebCamTextureToMatHelperErrorOccurred (WebCamTextureToMatHelper.ErrorCode errorCode)
+        {
             Debug.Log ("OnWebCamTextureToMatHelperErrorOccurred " + errorCode);
         }
         
@@ -370,18 +361,15 @@ namespace MarkerLessARExample
 
                     ARGameObject.GetComponent<DelayableSetActive> ().SetActive (false, 0.5f);
                 }
-                            
                 
                 Utils.matToTexture2D (rgbaMat, texture, webCamTextureToMatHelper.GetBufferColors ());
-
             }
-            
         }
 
         /// <summary>
-        /// Raises the disable event.
+        /// Raises the destroy event.
         /// </summary>
-        void OnDisable ()
+        void OnDestroy ()
         {
             webCamTextureToMatHelper.Dispose ();
 
@@ -389,11 +377,10 @@ namespace MarkerLessARExample
                 patternMat.Dispose ();
         }
 
-
         /// <summary>
-        /// Raises the back button event.
+        /// Raises the back button click event.
         /// </summary>
-        public void OnBackButton ()
+        public void OnBackButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");
@@ -401,82 +388,82 @@ namespace MarkerLessARExample
             Application.LoadLevel ("MarkerLessARExample");
             #endif
         }
-        
+
         /// <summary>
-        /// Raises the play button event.
+        /// Raises the play button click event.
         /// </summary>
-        public void OnPlayButton ()
+        public void OnPlayButtonClick ()
         {
             webCamTextureToMatHelper.Play ();
         }
-        
+
         /// <summary>
-        /// Raises the pause button event.
+        /// Raises the pause button click event.
         /// </summary>
-        public void OnPauseButton ()
+        public void OnPauseButtonClick ()
         {
             webCamTextureToMatHelper.Pause ();
         }
-        
+
         /// <summary>
-        /// Raises the stop button event.
+        /// Raises the stop button click event.
         /// </summary>
-        public void OnStopButton ()
+        public void OnStopButtonClick ()
         {
             webCamTextureToMatHelper.Stop ();
         }
-        
+
         /// <summary>
-        /// Raises the change camera button event.
+        /// Raises the change camera button click event.
         /// </summary>
-        public void OnChangeCameraButton ()
+        public void OnChangeCameraButtonClick ()
         {
-            webCamTextureToMatHelper.Init (null, webCamTextureToMatHelper.requestWidth, webCamTextureToMatHelper.requestHeight, !webCamTextureToMatHelper.requestIsFrontFacing);
+            webCamTextureToMatHelper.Initialize (null, webCamTextureToMatHelper.requestedWidth, webCamTextureToMatHelper.requestedHeight, !webCamTextureToMatHelper.requestedIsFrontFacing);
         }
 
         /// <summary>
-        /// Raises the is showing axes toggle event.
+        /// Raises the display axes toggle value changed event.
         /// </summary>
-        public void OnIsShowingAxesToggle ()
+        public void OnDisplayAxesToggleValueChanged ()
         {
-            if (isShowingAxesToggle.isOn) {
-                isShowingAxes = true;
+            if (displayAxesToggle.isOn) {
+                displayAxes = true;
             } else {
-                isShowingAxes = false;
+                displayAxes = false;
             }
-            axes.SetActive (isShowingAxes);
+            axes.SetActive (displayAxes);
         }
 
         /// <summary>
-        /// Raises the is showing cube toggle event.
+        /// Raises the display cube toggle value changed event.
         /// </summary>
-        public void OnIsShowingCubeToggle ()
+        public void OnDisplayCubeToggleValueChanged ()
         {
-            if (isShowingCubeToggle.isOn) {
-                isShowingCube = true;
+            if (displayCubeToggle.isOn) {
+                displayCube = true;
             } else {
-                isShowingCube = false;
+                displayCube = false;
             }
-            cube.SetActive (isShowingCube);
+            cube.SetActive (displayCube);
         }
 
         /// <summary>
-        /// Raises the is showing video toggle event.
+        /// Raises the display video toggle value changed event.
         /// </summary>
-        public void OnIsShowingVideoToggle ()
+        public void OnDisplayVideoToggleValueChanged ()
         {
-            if (isShowingVideoToggle.isOn) {
-                isShowingVideo = true;
+            if (displayVideoToggle.isOn) {
+                displayVideo = true;
             } else {
-                isShowingVideo = false;
+                displayVideo = false;
             }
-            video.SetActive (isShowingVideo);
+            video.SetActive (displayVideo);
         }
 
         /// <summary>
-        /// Raises the pattern capture button event.
+        /// Raises the capture pattern button click event.
         /// </summary>
-        public void OnPatternCaptureButton ()
+        public void OnCapturePatternButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("CapturePattern");
@@ -485,5 +472,4 @@ namespace MarkerLessARExample
             #endif
         }
     }
-    
 }

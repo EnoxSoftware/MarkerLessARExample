@@ -9,7 +9,6 @@ namespace MarkerLessARSample
 {
     public class ShowLicense : MonoBehaviour
     {
-        
         // Use this for initialization
         void Start ()
         {
@@ -22,7 +21,7 @@ namespace MarkerLessARSample
             
         }
         
-        public void OnBackButton ()
+        public void OnBackButtonButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");

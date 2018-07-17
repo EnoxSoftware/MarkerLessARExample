@@ -8,7 +8,6 @@ namespace MarkerLessARExample
     /// </summary>
     public class ARUtils
     {
-        
         /// <summary>
         /// Extract translation from transform matrix.
         /// </summary>

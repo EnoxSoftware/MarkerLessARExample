@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using OpenCVMarkerLessAR;
 
 #if UNITY_5_3 || UNITY_5_3_OR_NEWER
 using UnityEngine.SceneManagement;
@@ -10,12 +11,11 @@ using OpenCVForUnity;
 namespace MarkerLessARExample
 {
     /// <summary>
-    /// Marker Less AR example from Texture2D.
-    /// https://github.com/MasteringOpenCV/code/tree/master/Chapter3_MarkerlessAR by using "OpenCV for Unity"
+    /// Texture2D Markerless AR Example
+    /// This code is a rewrite of https://github.com/MasteringOpenCV/code/tree/master/Chapter3_MarkerlessAR using "OpenCV for Unity".
     /// </summary>
     public class Texture2DMarkerLessARExample : MonoBehaviour
     {
-
         /// <summary>
         /// The pattern texture.
         /// </summary>
@@ -37,21 +37,18 @@ namespace MarkerLessARExample
         public Camera ARCamera;
 
         /// <summary>
-        /// The should move AR camera.
+        /// Determines if should move AR camera.
         /// </summary>
-        public bool
-            shouldMoveARCamera;
+        public bool shouldMoveARCamera;
         
         /// <summary>
         /// The AR game object.
         /// </summary>
         public GameObject ARGameObject;
 
-
         // Use this for initialization
         void Start ()
         {
-
             Mat patternMat = new Mat (patternTexture.height, patternTexture.width, CvType.CV_8UC4);
             
             Utils.texture2DToMat (patternTexture, patternMat);
@@ -201,7 +198,10 @@ namespace MarkerLessARExample
     
         }
 
-        public void OnBackButton ()
+        /// <summary>
+        /// Raises the back button click event.
+        /// </summary>
+        public void OnBackButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");

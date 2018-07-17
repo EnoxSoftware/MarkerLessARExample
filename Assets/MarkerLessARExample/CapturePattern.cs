@@ -15,7 +15,10 @@ namespace MarkerLessARExample
     [RequireComponent(typeof(WebCamTextureToMatHelper))]
     public class CapturePattern : MonoBehaviour
     {
-
+        /// <summary>
+        /// The pattern raw image.
+        /// </summary>
+        public RawImage patternRawImage;
 
         /// <summary>
         /// The texture.
@@ -23,7 +26,7 @@ namespace MarkerLessARExample
         Texture2D texture;
 
         /// <summary>
-        /// The web cam texture to mat helper.
+        /// The webcam texture to mat helper.
         /// </summary>
         WebCamTextureToMatHelper webCamTextureToMatHelper;
 
@@ -36,11 +39,6 @@ namespace MarkerLessARExample
         /// The rgb mat.
         /// </summary>
         Mat rgbMat;
-
-        /// <summary>
-        /// The pattern raw image.
-        /// </summary>
-        public RawImage patternRawImage;
 
         /// <summary>
         /// The detector.
@@ -78,7 +76,7 @@ namespace MarkerLessARExample
             }
             
             webCamTextureToMatHelper = gameObject.GetComponent<WebCamTextureToMatHelper> ();
-            webCamTextureToMatHelper.Init ();
+            webCamTextureToMatHelper.Initialize ();
 
 
             detector = ORB.create ();
@@ -87,11 +85,11 @@ namespace MarkerLessARExample
         }
 
         /// <summary>
-        /// Raises the web cam texture to mat helper inited event.
+        /// Raises the web cam texture to mat helper initialized event.
         /// </summary>
-        public void OnWebCamTextureToMatHelperInited ()
+        public void OnWebCamTextureToMatHelperInitialized ()
         {
-            Debug.Log ("OnWebCamTextureToMatHelperInited");
+            Debug.Log ("OnWebCamTextureToMatHelperInitialized");
 
 
             Mat webCamTextureMat = webCamTextureToMatHelper.GetMat ();
@@ -119,8 +117,6 @@ namespace MarkerLessARExample
             }
                         
             gameObject.GetComponent<Renderer> ().material.mainTexture = texture;
-        
-                        
 
 
             //if WebCamera is frontFaceing,flip Mat.
@@ -132,7 +128,6 @@ namespace MarkerLessARExample
             int patternWidth = (int)(Mathf.Min (webCamTextureMat.width (), webCamTextureMat.height ()) * 0.8f);
 
             patternRect = new OpenCVForUnity.Rect (webCamTextureMat.width () / 2 - patternWidth / 2, webCamTextureMat.height () / 2 - patternWidth / 2, patternWidth, patternWidth);
-
         }
 
         /// <summary>
@@ -145,7 +140,6 @@ namespace MarkerLessARExample
             if (rgbMat != null) {
                 rgbMat.Dispose ();
             }
-                        
         }
 
         /// <summary>
@@ -166,23 +160,20 @@ namespace MarkerLessARExample
 
                 Imgproc.cvtColor (rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB);
 
-
                 detector.detect (rgbaMat, keypoints);
 //                Debug.Log ("keypoints.ToString() " + keypoints.ToString());
                 Features2d.drawKeypoints (rgbMat, keypoints, rgbaMat, Scalar.all (-1), Features2d.NOT_DRAW_SINGLE_POINTS);
 
-
-
                 Imgproc.rectangle (rgbaMat, patternRect.tl (), patternRect.br (), new Scalar (255, 0, 0, 255), 5);
-                            
 
                 Utils.matToTexture2D (rgbaMat, texture, webCamTextureToMatHelper.GetBufferColors ());
-                
             }
-            
         }
 
-        void OnDisable ()
+        /// <summary>
+        /// Raises the destroy event.
+        /// </summary>
+        void OnDestroy ()
         {
             webCamTextureToMatHelper.Dispose ();
 
@@ -193,11 +184,10 @@ namespace MarkerLessARExample
 //            Utils.setDebugMode(false);
         }
 
-
         /// <summary>
-        /// Raises the back button event.
+        /// Raises the back button click event.
         /// </summary>
-        public void OnBackButton ()
+        public void OnBackButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");
@@ -207,43 +197,42 @@ namespace MarkerLessARExample
         }
         
         /// <summary>
-        /// Raises the play button event.
+        /// Raises the play button click event.
         /// </summary>
-        public void OnPlayButton ()
+        public void OnPlayButtonClick ()
         {
             webCamTextureToMatHelper.Play ();
         }
         
         /// <summary>
-        /// Raises the pause button event.
+        /// Raises the pause button click event.
         /// </summary>
-        public void OnPauseButton ()
+        public void OnPauseButtonClick ()
         {
             webCamTextureToMatHelper.Pause ();
         }
         
         /// <summary>
-        /// Raises the stop button event.
+        /// Raises the stop button click event.
         /// </summary>
-        public void OnStopButton ()
+        public void OnStopButtonClick ()
         {
             webCamTextureToMatHelper.Stop ();
         }
         
         /// <summary>
-        /// Raises the change camera button event.
+        /// Raises the change camera button click event.
         /// </summary>
-        public void OnChangeCameraButton ()
+        public void OnChangeCameraButtonClick ()
         {
-            webCamTextureToMatHelper.Init (null, webCamTextureToMatHelper.requestWidth, webCamTextureToMatHelper.requestHeight, !webCamTextureToMatHelper.requestIsFrontFacing);
+            webCamTextureToMatHelper.Initialize (null, webCamTextureToMatHelper.requestedWidth, webCamTextureToMatHelper.requestedHeight, !webCamTextureToMatHelper.requestedIsFrontFacing);
         }
 
         /// <summary>
-        /// Raises the capture button event.
+        /// Raises the capture button click event.
         /// </summary>
-        public void OnCaptureButton ()
+        public void OnCaptureButtonClick ()
         {
-
             Mat patternMat = new Mat (rgbMat, patternRect);
 
             Texture2D patternTexture = new Texture2D (patternMat.width (), patternMat.height (), TextureFormat.RGBA32, false);
@@ -253,13 +242,12 @@ namespace MarkerLessARExample
             patternRawImage.texture = patternTexture;
 
             patternRawImage.gameObject.SetActive (true);
-
         }
 
         /// <summary>
-        /// Raises the save button event.
+        /// Raises the save button click event.
         /// </summary>
-        public void OnSaveButton ()
+        public void OnSaveButtonClick ()
         {
             if (patternRawImage.texture != null) {
                 Texture2D patternTexture = (Texture2D)patternRawImage.texture;
@@ -280,5 +268,4 @@ namespace MarkerLessARExample
             }
         }
     }
-    
 }

@@ -9,7 +9,6 @@ namespace MarkerLessARExample
 {
     public class MarkerLessARExample : MonoBehaviour
     {
-        
         // Use this for initialization
         void Start ()
         {
@@ -22,7 +21,7 @@ namespace MarkerLessARExample
             
         }
 
-        public void OnShowLicenseButton ()
+        public void OnShowLicenseButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("ShowLicense");
@@ -31,7 +30,7 @@ namespace MarkerLessARExample
             #endif
         }
         
-        public void Texture2DMarkerLessARExample ()
+        public void OnTexture2DMarkerLessARExampleButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("Texture2DMarkerLessARExample");
@@ -40,7 +39,7 @@ namespace MarkerLessARExample
             #endif
         }
         
-        public void WebCamTextureMarkerLessARExample ()
+        public void OnWebCamTextureMarkerLessARExampleButtonClick ()
         {
             #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("WebCamTextureMarkerLessARExample");

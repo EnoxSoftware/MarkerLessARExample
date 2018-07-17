@@ -6,18 +6,17 @@ using OpenCVForUnity;
 namespace MarkerLessARExample
 {
     /// <summary>
-    /// VideoCapture example.
+    /// Display video.
     /// </summary>
     public class DisplayVideo : MonoBehaviour
     {
-
         /// <summary>
         /// The name of the file.
         /// </summary>
         public string fileName;
 
         /// <summary>
-        /// The capture.
+        /// The video capture.
         /// </summary>
         VideoCapture capture;
 
@@ -62,7 +61,6 @@ namespace MarkerLessARExample
                 Debug.Log ("capture.isOpened() false");
             }
 
-
             Debug.Log ("CAP_PROP_FORMAT: " + capture.get (Videoio.CAP_PROP_FORMAT));
             Debug.Log ("CV_CAP_PROP_PREVIEW_FORMAT: " + capture.get (Videoio.CV_CAP_PROP_PREVIEW_FORMAT));
             Debug.Log ("CAP_PROP_POS_MSEC: " + capture.get (Videoio.CAP_PROP_POS_MSEC));
@@ -103,7 +101,10 @@ namespace MarkerLessARExample
                 Utils.matToTexture2D (rgbMat, texture, colors);
             }
         }
-        
+
+        /// <summary>
+        /// Raises the destroy event.
+        /// </summary>
         void OnDestroy ()
         {
             capture.release ();
