@@ -63,7 +63,8 @@ namespace OpenCVMarkerLessAR
                 new Scalar (0, 200, 0, 255), 
                 Scalar.all (-1),
                 new MatOfByte (), 
-                Features2d.NOT_DRAW_SINGLE_POINTS
+                //Features2d.NOT_DRAW_SINGLE_POINTS
+                2
             );
         
             return outImg;
