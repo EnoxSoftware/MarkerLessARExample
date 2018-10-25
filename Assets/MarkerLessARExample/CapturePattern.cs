@@ -162,7 +162,8 @@ namespace MarkerLessARExample
 
                 detector.detect (rgbaMat, keypoints);
 //                Debug.Log ("keypoints.ToString() " + keypoints.ToString());
-                Features2d.drawKeypoints (rgbMat, keypoints, rgbaMat, Scalar.all (-1), Features2d.NOT_DRAW_SINGLE_POINTS);
+                //Features2d.drawKeypoints (rgbMat, keypoints, rgbaMat, Scalar.all (-1), Features2d.NOT_DRAW_SINGLE_POINTS);
+                Features2d.drawKeypoints (rgbMat, keypoints, rgbaMat, Scalar.all (-1), 2);
 
                 Imgproc.rectangle (rgbaMat, patternRect.tl (), patternRect.br (), new Scalar (255, 0, 0, 255), 5);
 
