@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-
-using OpenCVForUnity;
+﻿using OpenCVForUnity.CoreModule;
 
 namespace OpenCVMarkerLessAR
 {

@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-
-using OpenCVForUnity;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.Calib3dModule;
+using OpenCVForUnity.ImgprocModule;
 
 namespace OpenCVMarkerLessAR
 {
@@ -19,7 +20,7 @@ namespace OpenCVMarkerLessAR
         /// <summary>
         /// The points2d.
         /// </summary>
-        public MatOfPoint2f  points2d;
+        public MatOfPoint2f points2d;
 
         /// <summary>
         /// The pose3d.

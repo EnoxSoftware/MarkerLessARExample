@@ -1,18 +1,19 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
-
-#if UNITY_5_3 || UNITY_5_3_OR_NEWER
 using UnityEngine.SceneManagement;
-#endif
-using OpenCVForUnity;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.Features2dModule;
+using OpenCVForUnity.ImgcodecsModule;
+using OpenCVForUnity.ImgprocModule;
+using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.UnityUtils.Helper;
 
 namespace MarkerLessARExample
 {
     /// <summary>
     /// Pattern capture.
     /// </summary>
-    [RequireComponent(typeof(WebCamTextureToMatHelper))]
+    [RequireComponent (typeof(WebCamTextureToMatHelper))]
     public class CapturePattern : MonoBehaviour
     {
         /// <summary>
@@ -33,12 +34,17 @@ namespace MarkerLessARExample
         /// <summary>
         /// The pattern rect.
         /// </summary>
-        OpenCVForUnity.Rect patternRect;
+        OpenCVForUnity.CoreModule.Rect patternRect;
 
         /// <summary>
         /// The rgb mat.
         /// </summary>
         Mat rgbMat;
+
+        /// <summary>
+        /// The output mat.
+        /// </summary>
+        Mat outputMat;
 
         /// <summary>
         /// The detector.
@@ -76,8 +82,12 @@ namespace MarkerLessARExample
             }
             
             webCamTextureToMatHelper = gameObject.GetComponent<WebCamTextureToMatHelper> ();
-            webCamTextureToMatHelper.Initialize ();
 
+            #if UNITY_ANDROID && !UNITY_EDITOR
+            // Avoids the front camera low light issue that occurs in only some Android devices (e.g. Google Pixel, Pixel2).
+            webCamTextureToMatHelper.avoidAndroidFrontCameraLowLightIssue = true;
+            #endif
+            webCamTextureToMatHelper.Initialize ();
 
             detector = ORB.create ();
             detector.setMaxFeatures (1000);
@@ -94,9 +104,11 @@ namespace MarkerLessARExample
 
             Mat webCamTextureMat = webCamTextureToMatHelper.GetMat ();
                     
-            texture = new Texture2D (webCamTextureMat.width (), webCamTextureMat.height (), TextureFormat.RGBA32, false);
+            texture = new Texture2D (webCamTextureMat.width (), webCamTextureMat.height (), TextureFormat.RGB24, false);
 
             rgbMat = new Mat (webCamTextureMat.rows (), webCamTextureMat.cols (), CvType.CV_8UC3);
+
+            outputMat = new Mat (webCamTextureMat.rows (), webCamTextureMat.cols (), CvType.CV_8UC3);
                     
 
                     
@@ -127,7 +139,7 @@ namespace MarkerLessARExample
 
             int patternWidth = (int)(Mathf.Min (webCamTextureMat.width (), webCamTextureMat.height ()) * 0.8f);
 
-            patternRect = new OpenCVForUnity.Rect (webCamTextureMat.width () / 2 - patternWidth / 2, webCamTextureMat.height () / 2 - patternWidth / 2, patternWidth, patternWidth);
+            patternRect = new OpenCVForUnity.CoreModule.Rect (webCamTextureMat.width () / 2 - patternWidth / 2, webCamTextureMat.height () / 2 - patternWidth / 2, patternWidth, patternWidth);
         }
 
         /// <summary>
@@ -139,6 +151,9 @@ namespace MarkerLessARExample
 
             if (rgbMat != null) {
                 rgbMat.Dispose ();
+            }
+            if (outputMat != null) {
+                outputMat.Dispose ();
             }
         }
 
@@ -159,14 +174,16 @@ namespace MarkerLessARExample
                 Mat rgbaMat = webCamTextureToMatHelper.GetMat ();
 
                 Imgproc.cvtColor (rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB);
+                Imgproc.cvtColor (rgbaMat, outputMat, Imgproc.COLOR_RGBA2RGB);
 
-                detector.detect (rgbaMat, keypoints);
-//                Debug.Log ("keypoints.ToString() " + keypoints.ToString());
-                Features2d.drawKeypoints (rgbMat, keypoints, rgbaMat, Scalar.all (-1), Features2d.NOT_DRAW_SINGLE_POINTS);
+                detector.detect (rgbMat, keypoints);
+                //Debug.Log ("keypoints.ToString() " + keypoints.ToString());
+                Features2d.drawKeypoints (rgbMat, keypoints, rgbMat, Scalar.all (-1));
 
-                Imgproc.rectangle (rgbaMat, patternRect.tl (), patternRect.br (), new Scalar (255, 0, 0, 255), 5);
 
-                Utils.matToTexture2D (rgbaMat, texture, webCamTextureToMatHelper.GetBufferColors ());
+                Imgproc.rectangle (rgbMat, patternRect.tl (), patternRect.br (), new Scalar (255, 0, 0, 255), 5);
+
+                Utils.fastMatToTexture2D (rgbMat, texture);
             }
         }
 
@@ -189,13 +206,9 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnBackButtonClick ()
         {
-            #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");
-            #else
-            Application.LoadLevel ("MarkerLessARExample");
-            #endif
         }
-        
+
         /// <summary>
         /// Raises the play button click event.
         /// </summary>
@@ -203,7 +216,7 @@ namespace MarkerLessARExample
         {
             webCamTextureToMatHelper.Play ();
         }
-        
+
         /// <summary>
         /// Raises the pause button click event.
         /// </summary>
@@ -211,7 +224,7 @@ namespace MarkerLessARExample
         {
             webCamTextureToMatHelper.Pause ();
         }
-        
+
         /// <summary>
         /// Raises the stop button click event.
         /// </summary>
@@ -219,13 +232,13 @@ namespace MarkerLessARExample
         {
             webCamTextureToMatHelper.Stop ();
         }
-        
+
         /// <summary>
         /// Raises the change camera button click event.
         /// </summary>
         public void OnChangeCameraButtonClick ()
         {
-            webCamTextureToMatHelper.Initialize (null, webCamTextureToMatHelper.requestedWidth, webCamTextureToMatHelper.requestedHeight, !webCamTextureToMatHelper.requestedIsFrontFacing);
+            webCamTextureToMatHelper.requestedIsFrontFacing = !webCamTextureToMatHelper.IsFrontFacing ();
         }
 
         /// <summary>
@@ -233,7 +246,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnCaptureButtonClick ()
         {
-            Mat patternMat = new Mat (rgbMat, patternRect);
+            Mat patternMat = new Mat (outputMat, patternRect);
 
             Texture2D patternTexture = new Texture2D (patternMat.width (), patternMat.height (), TextureFormat.RGBA32, false);
             
@@ -260,11 +273,7 @@ namespace MarkerLessARExample
             
                 Imgcodecs.imwrite (savePath + "/patternImg.jpg", patternMat);
             
-                #if UNITY_5_3 || UNITY_5_3_OR_NEWER
                 SceneManager.LoadScene ("WebCamTextureMarkerLessARExample");
-                #else
-                Application.LoadLevel ("WebCamTextureMarkerLessARExample");
-                #endif
             }
         }
     }

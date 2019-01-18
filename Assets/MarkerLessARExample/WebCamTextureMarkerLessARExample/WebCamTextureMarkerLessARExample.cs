@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
-using OpenCVMarkerLessAR;
-
-#if UNITY_5_3 || UNITY_5_3_OR_NEWER
 using UnityEngine.SceneManagement;
-#endif
-using OpenCVForUnity;
+using OpenCVMarkerLessAR;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.ImgcodecsModule;
+using OpenCVForUnity.ImgprocModule;
+using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.Calib3dModule;
+using OpenCVForUnity.UnityUtils.Helper;
 
 namespace MarkerLessARExample
 {
@@ -188,6 +189,10 @@ namespace MarkerLessARExample
                 patternDetector.train (pattern);
 
 
+                #if UNITY_ANDROID && !UNITY_EDITOR
+                // Avoids the front camera low light issue that occurs in only some Android devices (e.g. Google Pixel, Pixel2).
+                webCamTextureToMatHelper.avoidAndroidFrontCameraLowLightIssue = true;
+                #endif
                 webCamTextureToMatHelper.Initialize ();
             }
         }
@@ -362,7 +367,7 @@ namespace MarkerLessARExample
                     ARGameObject.GetComponent<DelayableSetActive> ().SetActive (false, 0.5f);
                 }
                 
-                Utils.matToTexture2D (rgbaMat, texture, webCamTextureToMatHelper.GetBufferColors ());
+                Utils.fastMatToTexture2D (rgbaMat, texture);
             }
         }
 
@@ -382,11 +387,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnBackButtonClick ()
         {
-            #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");
-            #else
-            Application.LoadLevel ("MarkerLessARExample");
-            #endif
         }
 
         /// <summary>
@@ -418,7 +419,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnChangeCameraButtonClick ()
         {
-            webCamTextureToMatHelper.Initialize (null, webCamTextureToMatHelper.requestedWidth, webCamTextureToMatHelper.requestedHeight, !webCamTextureToMatHelper.requestedIsFrontFacing);
+            webCamTextureToMatHelper.requestedIsFrontFacing = !webCamTextureToMatHelper.IsFrontFacing ();
         }
 
         /// <summary>
@@ -465,11 +466,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnCapturePatternButtonClick ()
         {
-            #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("CapturePattern");
-            #else
-            Application.LoadLevel ("CapturePattern");
-            #endif
         }
     }
 }

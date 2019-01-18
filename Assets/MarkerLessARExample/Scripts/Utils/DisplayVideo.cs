@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
-
-using OpenCVForUnity;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.VideoioModule;
+using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.ImgprocModule;
+using VideoCapture = OpenCVForUnity.VideoioModule.VideoCapture;
 
 namespace MarkerLessARExample
 {
@@ -62,7 +64,6 @@ namespace MarkerLessARExample
             }
 
             Debug.Log ("CAP_PROP_FORMAT: " + capture.get (Videoio.CAP_PROP_FORMAT));
-            Debug.Log ("CV_CAP_PROP_PREVIEW_FORMAT: " + capture.get (Videoio.CV_CAP_PROP_PREVIEW_FORMAT));
             Debug.Log ("CAP_PROP_POS_MSEC: " + capture.get (Videoio.CAP_PROP_POS_MSEC));
             Debug.Log ("CAP_PROP_POS_FRAMES: " + capture.get (Videoio.CAP_PROP_POS_FRAMES));
             Debug.Log ("CAP_PROP_POS_AVI_RATIO: " + capture.get (Videoio.CAP_PROP_POS_AVI_RATIO));
@@ -112,7 +113,5 @@ namespace MarkerLessARExample
             if (rgbMat != null)
                 rgbMat.Dispose ();
         }
-
     }
-    
 }

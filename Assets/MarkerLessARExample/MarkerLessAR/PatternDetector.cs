@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-
-using OpenCVForUnity;
+﻿using System.Collections.Generic;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.Features2dModule;
+using OpenCVForUnity.ImgprocModule;
+using OpenCVForUnity.Calib3dModule;
 
 namespace OpenCVMarkerLessAR
 {
@@ -95,9 +95,9 @@ namespace OpenCVMarkerLessAR
         /// <param name="matcher">Matcher.</param>
         /// <param name="ratioTest">If set to <c>true</c> ratio test.</param>
         public PatternDetector (ORB detector, 
-                            ORB extractor, 
-                            DescriptorMatcher matcher, 
-                            bool ratioTest = false)
+                                ORB extractor, 
+                                DescriptorMatcher matcher, 
+                                bool ratioTest = false)
         {
             if (detector == null) {
                 detector = ORB.create ();
@@ -226,11 +226,11 @@ namespace OpenCVMarkerLessAR
         
             // Find homography transformation and detect good matches
             bool homographyFound = refineMatchesWithHomography (
-            m_queryKeypoints, 
-            m_pattern.keypoints, 
-            homographyReprojectionThreshold, 
-            m_matches, 
-            m_roughHomography);
+                                       m_queryKeypoints, 
+                                       m_pattern.keypoints, 
+                                       homographyReprojectionThreshold, 
+                                       m_matches, 
+                                       m_roughHomography);
         
             if (homographyFound) {
                         
@@ -256,11 +256,11 @@ namespace OpenCVMarkerLessAR
                 
                         // Estimate new refinement homography
                         homographyFound = refineMatchesWithHomography (
-                    warpedKeypoints, 
-                    m_pattern.keypoints, 
-                    homographyReprojectionThreshold, 
-                    refinedMatches, 
-                    m_refinedHomography);
+                            warpedKeypoints, 
+                            m_pattern.keypoints, 
+                            homographyReprojectionThreshold, 
+                            refinedMatches, 
+                            m_refinedHomography);
                     }
                                 
                     //(GameObject.Find ("DebugHelpers").GetComponent<DebugHelpers> ()).showMat(DebugHelpers.getMatchesImage(m_warpedImg, m_pattern.grayImg, warpedKeypoints, m_pattern.keypoints, refinedMatches, 100));
@@ -373,7 +373,7 @@ namespace OpenCVMarkerLessAR
                 // KNN match will return 2 nearest matches for each query descriptor
                 m_matcher.knnMatch (queryDescriptors, m_knnMatches, 2);
             
-                for (int i=0; i<m_knnMatches.Count; i++) {
+                for (int i = 0; i < m_knnMatches.Count; i++) {
                     List<DMatch> m_knnMatchesList = m_knnMatches [i].toList ();
 
                     DMatch bestMatch = m_knnMatchesList [0];
@@ -452,10 +452,10 @@ namespace OpenCVMarkerLessAR
 
                         
                 Calib3d.findHomography (srcPoints, 
-                                dstPoints, 
-                                Calib3d.FM_RANSAC, 
-                                reprojectionThreshold, 
-                                inliersMask, 2000, 0.955).copyTo (homography);
+                    dstPoints, 
+                    Calib3d.FM_RANSAC, 
+                    reprojectionThreshold, 
+                    inliersMask, 2000, 0.955).copyTo (homography);
 
                 if (homography.rows () != 3 || homography.cols () != 3)
                     return false;
@@ -467,7 +467,7 @@ namespace OpenCVMarkerLessAR
                 List<byte> inliersMaskList = inliersMask.toList ();
             
                 List<DMatch> inliers = new List<DMatch> ();
-                for (int i=0; i<inliersMaskList.Count; i++) {
+                for (int i = 0; i < inliersMaskList.Count; i++) {
                     if (inliersMaskList [i] == 1)
                         inliers.Add (matchesList [i]);
                 }

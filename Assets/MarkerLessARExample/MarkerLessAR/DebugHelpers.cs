@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-
-using OpenCVForUnity;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.Features2dModule;
 
 namespace OpenCVMarkerLessAR
 {
@@ -62,8 +62,7 @@ namespace OpenCVMarkerLessAR
                 outImg, 
                 new Scalar (0, 200, 0, 255), 
                 Scalar.all (-1),
-                new MatOfByte (), 
-                Features2d.NOT_DRAW_SINGLE_POINTS
+                new MatOfByte ()
             );
         
             return outImg;

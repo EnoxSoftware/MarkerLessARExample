@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
-using System.Collections;
-
-#if UNITY_5_3 || UNITY_5_3_OR_NEWER
 using UnityEngine.SceneManagement;
-#endif
+using System.Collections;
 
 namespace MarkerLessARSample
 {
+    /// <summary>
+    /// Show License
+    /// </summary>
     public class ShowLicense : MonoBehaviour
     {
         // Use this for initialization
@@ -20,14 +20,10 @@ namespace MarkerLessARSample
         {
             
         }
-        
+
         public void OnBackButtonButtonClick ()
         {
-            #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");
-            #else
-            Application.LoadLevel ("MarkerLessARExample");
-            #endif
         }
     }
 }

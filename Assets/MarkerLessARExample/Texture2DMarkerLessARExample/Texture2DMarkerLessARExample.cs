@@ -1,12 +1,10 @@
 using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
-using OpenCVMarkerLessAR;
-
-#if UNITY_5_3 || UNITY_5_3_OR_NEWER
 using UnityEngine.SceneManagement;
-#endif
-using OpenCVForUnity;
+using OpenCVMarkerLessAR;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.Calib3dModule;
 
 namespace MarkerLessARExample
 {
@@ -203,11 +201,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnBackButtonClick ()
         {
-            #if UNITY_5_3 || UNITY_5_3_OR_NEWER
             SceneManager.LoadScene ("MarkerLessARExample");
-            #else
-            Application.LoadLevel ("MarkerLessARExample");
-            #endif
         }
     }
 }
