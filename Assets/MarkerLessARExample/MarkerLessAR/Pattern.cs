@@ -46,15 +46,15 @@ namespace OpenCVMarkerLessAR
         /// <summary>
         /// Initializes a new instance of the <see cref="Pattern"/> class.
         /// </summary>
-        public Pattern ()
+        public Pattern()
         {
-            size = new Size ();
-            frame = new Mat ();
-            grayImg = new Mat ();
-            keypoints = new MatOfKeyPoint ();
-            descriptors = new Mat ();
-            points2d = new MatOfPoint2f ();
-            points3d = new MatOfPoint3f ();
+            size = new Size();
+            frame = new Mat();
+            grayImg = new Mat();
+            keypoints = new MatOfKeyPoint();
+            descriptors = new Mat();
+            points2d = new MatOfPoint2f();
+            points3d = new MatOfPoint3f();
         }
     }
 }

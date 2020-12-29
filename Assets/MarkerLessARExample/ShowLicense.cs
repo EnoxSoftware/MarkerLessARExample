@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 namespace MarkerLessARSample
 {
@@ -10,20 +9,20 @@ namespace MarkerLessARSample
     public class ShowLicense : MonoBehaviour
     {
         // Use this for initialization
-        void Start ()
+        void Start()
         {
-            
-        }
-        
-        // Update is called once per frame
-        void Update ()
-        {
-            
+
         }
 
-        public void OnBackButtonButtonClick ()
+        // Update is called once per frame
+        void Update()
         {
-            SceneManager.LoadScene ("MarkerLessARExample");
+
+        }
+
+        public void OnBackButtonButtonClick()
+        {
+            SceneManager.LoadScene("MarkerLessARExample");
         }
     }
 }

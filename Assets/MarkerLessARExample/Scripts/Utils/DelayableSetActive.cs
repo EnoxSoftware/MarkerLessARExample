@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace MarkerLessARExample
 {
@@ -12,33 +12,36 @@ namespace MarkerLessARExample
         /// </summary>
         /// <param name="value">If set to <c>true</c> value.</param>
         /// <param name="delayTime">Delay time.</param>
-        public void SetActive (bool value, float delayTime = 0.0f)
+        public void SetActive(bool value, float delayTime = 0.0f)
         {
-            if (value) {
-                if (deactivateCoroutine != null) {
-                    StopCoroutine (deactivateCoroutine);
+            if (value)
+            {
+                if (deactivateCoroutine != null)
+                {
+                    StopCoroutine(deactivateCoroutine);
                     deactivateCoroutine = null;
                 }
 
-                gameObject.SetActive (value);
-
-            } else {
-
-                if (delayTime == 0.0f) {
-                    gameObject.SetActive (value);
+                gameObject.SetActive(value);
+            }
+            else
+            {
+                if (delayTime == 0.0f)
+                {
+                    gameObject.SetActive(value);
                     return;
                 }
 
                 if (gameObject.activeSelf && deactivateCoroutine == null)
-                    deactivateCoroutine = StartCoroutine (DeactivateGameObject (delayTime));
+                    deactivateCoroutine = StartCoroutine(DeactivateGameObject(delayTime));
             }
         }
 
-        private IEnumerator DeactivateGameObject (float delayTime)
+        private IEnumerator DeactivateGameObject(float delayTime)
         {
-            yield return new WaitForSeconds (delayTime);
-        
-            gameObject.SetActive (false);
+            yield return new WaitForSeconds(delayTime);
+
+            gameObject.SetActive(false);
             deactivateCoroutine = null;
         }
     }
