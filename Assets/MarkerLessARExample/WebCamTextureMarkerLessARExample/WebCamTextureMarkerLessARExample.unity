@@ -3450,7 +3450,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11437188, guid: 40ce61fc39bbb804491b6c4da4594505, type: 3}
       propertyPath: fileName
-      value: dance.avi
+      value: dance_mjpeg.mjpeg
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 40ce61fc39bbb804491b6c4da4594505, type: 3}
