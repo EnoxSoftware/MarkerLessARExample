@@ -1,6 +1,6 @@
 {
 "companyName": "Enox Software",
-"productName": "2019.4.14f1_Il2CPP_MarkerLessARExample",
+"productName": "2019.4.23f1_Il2CPP_MarkerLessARExample",
 "productVersion": "1.0.7",
 "dataUrl": "Default WebGL-latest_Wasm.data.unityweb",
 "wasmCodeUrl": "Default WebGL-latest_Wasm.wasm.code.unityweb",
@@ -16,5 +16,5 @@
 "cacheControl": {"default": "must-revalidate"},
 "developmentBuild": false,
 "multithreading": false,
-"unityVersion": "2019.4.14f1"
+"unityVersion": "2019.4.23f1"
 }
