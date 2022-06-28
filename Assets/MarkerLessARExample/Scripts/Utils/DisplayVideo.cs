@@ -1,4 +1,4 @@
-﻿using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.VideoioModule;
@@ -113,7 +113,8 @@ namespace MarkerLessARExample
         // Update is called once per frame
         void Update()
         {
-            if (isPlaying) {
+            if (isPlaying)
+            {
 
 
                 //Loop play
