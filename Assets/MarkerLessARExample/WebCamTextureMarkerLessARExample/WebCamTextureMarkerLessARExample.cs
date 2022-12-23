@@ -19,6 +19,11 @@ namespace MarkerLessARExample
     public class WebCamTextureMarkerLessARExample : MonoBehaviour
     {
         /// <summary>
+        /// The pattern texture.
+        /// </summary>
+        public Texture2D patternTexture;
+
+        /// <summary>
         /// The pattern raw image.
         /// </summary>
         public RawImage patternRawImage;
@@ -82,6 +87,11 @@ namespace MarkerLessARExample
         /// The video.
         /// </summary>
         public GameObject video;
+
+        /// <summary>
+        /// The CapturePattern Button.
+        /// </summary>
+        public Button CapturePatternButton;
 
         /// <summary>
         /// The pattern mat.
@@ -152,9 +162,22 @@ namespace MarkerLessARExample
 
             webCamTextureToMatHelper = gameObject.GetComponent<WebCamTextureToMatHelper>();
 
-            patternMat = Imgcodecs.imread(Application.persistentDataPath + "/patternImg.jpg");
 
-            if (patternMat.total() == 0)
+            if (patternTexture != null)
+            {
+                patternMat = new Mat(patternTexture.height, patternTexture.width, CvType.CV_8UC3);
+                Utils.texture2DToMat(patternTexture, patternMat);
+                Imgproc.cvtColor(patternMat, patternMat, Imgproc.COLOR_RGB2BGR);
+                Debug.Log("patternMat dst ToString " + patternMat.ToString());
+
+                CapturePatternButton.interactable = false;
+            }
+            else
+            {
+                patternMat = Imgcodecs.imread(Application.persistentDataPath + "/patternImg.jpg");
+            }
+
+            if (patternMat == null || patternMat.total() == 0)
             {
                 OnCapturePatternButtonClick();
             }
@@ -176,11 +199,18 @@ namespace MarkerLessARExample
 
                 patternDetector = new PatternDetector(null, null, null, true);
 
-                patternDetector.buildPatternFromImage(patternMat, pattern);
-                patternDetector.train(pattern);
+                bool patternBuildSucceeded = patternDetector.buildPatternFromImage(patternMat, pattern);
 
+                if (patternBuildSucceeded)
+                {
+                    patternDetector.train(pattern);
 
-                webCamTextureToMatHelper.Initialize();
+                    webCamTextureToMatHelper.Initialize();
+                }
+                else 
+                {
+                    Debug.LogError("Input image could not be used as pattern image due to missing keypoints.");
+                }
             }
         }
 

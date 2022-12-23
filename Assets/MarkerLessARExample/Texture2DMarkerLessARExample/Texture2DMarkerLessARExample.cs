@@ -153,12 +153,16 @@ namespace MarkerLessARExample
 
             PatternDetector patternDetector = new PatternDetector(null, null, null, true);
 
-            patternDetector.buildPatternFromImage(patternMat, pattern);
-            patternDetector.train(pattern);
+            bool patternFound = false;
+            bool patternBuildSucceeded = patternDetector.buildPatternFromImage(patternMat, pattern);
 
+            Debug.Log("patternBuildSucceeded " + patternBuildSucceeded);
 
-
-            bool patternFound = patternDetector.findPattern(imgMat, patternTrackingInfo);
+            if (patternBuildSucceeded)
+            {
+                patternDetector.train(pattern);
+                patternFound = patternDetector.findPattern(imgMat, patternTrackingInfo);
+            }
 
             Debug.Log("patternFound " + patternFound);
 

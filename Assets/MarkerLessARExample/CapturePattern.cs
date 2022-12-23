@@ -247,6 +247,13 @@ namespace MarkerLessARExample
         {
             Mat patternMat = new Mat(outputMat, patternRect);
 
+            detector.detect(patternMat, keypoints);
+            if (keypoints.total() == 0)
+            {
+                Debug.LogWarning("Input image could not be used as pattern image due to missing keypoints.");
+                return;
+            }
+
             Texture2D patternTexture = new Texture2D(patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
 
             Utils.matToTexture2D(patternMat, patternTexture);

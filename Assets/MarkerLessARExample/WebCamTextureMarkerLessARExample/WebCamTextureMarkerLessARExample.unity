@@ -2584,6 +2584,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22005a6c954e9d24585ceafd5dfb3dc0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  patternTexture: {fileID: 0}
   patternRawImage: {fileID: 1756129323}
   ARGameObject: {fileID: 1586187710}
   ARCamera: {fileID: 2069525336}
@@ -2597,6 +2598,7 @@ MonoBehaviour:
   displayVideo: 0
   displayVideoToggle: {fileID: 1977600973}
   video: {fileID: 1522842811}
+  CapturePatternButton: {fileID: 909783135}
 --- !u!114 &1499518484
 MonoBehaviour:
   m_ObjectHideFlags: 0

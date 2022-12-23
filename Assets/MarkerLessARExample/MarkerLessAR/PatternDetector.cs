@@ -3,6 +3,7 @@ using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.Features2dModule;
 using OpenCVForUnity.ImgprocModule;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace OpenCVMarkerLessAR
 {
@@ -157,7 +158,7 @@ namespace OpenCVMarkerLessAR
         /// </summary>
         /// <param name="image">Image.</param>
         /// <param name="pattern">Pattern.</param>
-        public void buildPatternFromImage(Mat image, Pattern pattern)
+        public bool buildPatternFromImage(Mat image, Pattern pattern)
         {
             //int numImages = 4;
             //float step = Mathf.Sqrt (2.0f);
@@ -201,7 +202,7 @@ namespace OpenCVMarkerLessAR
             pattern.points3d.fromList(points3dList);
 
 
-            extractFeatures(pattern.grayImg, pattern.keypoints, pattern.descriptors);
+            return extractFeatures(pattern.grayImg, pattern.keypoints, pattern.descriptors);
         }
 
         /// <summary>
@@ -216,7 +217,9 @@ namespace OpenCVMarkerLessAR
             getGray(image, m_grayImg);
 
             // Extract feature points from input gray image
-            extractFeatures(m_grayImg, m_queryKeypoints, m_queryDescriptors);
+            bool result = extractFeatures(m_grayImg, m_queryKeypoints, m_queryDescriptors);
+            if (!result)
+                return false;
 
             // Get matches with current pattern
             getMatches(m_queryDescriptors, m_matches);
@@ -251,7 +254,9 @@ namespace OpenCVMarkerLessAR
                     using (MatOfDMatch refinedMatches = new MatOfDMatch())
                     {
                         // Detect features on warped image
-                        extractFeatures(m_warpedImg, warpedKeypoints, m_queryDescriptors);
+                        result = extractFeatures(m_warpedImg, warpedKeypoints, m_queryDescriptors);
+                        if (!result)
+                            return false;
 
                         // Match with pattern
                         getMatches(m_queryDescriptors, refinedMatches);
