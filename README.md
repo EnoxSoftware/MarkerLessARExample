@@ -18,7 +18,7 @@ Demo
 - WebGL
 <https://enoxsoftware.github.io/MarkerLessARExample/webgl_example/index.html>
 - Android
-<https://play.google.com/store/apps/details?id=com.enoxsoftware.markerlessarexample>
+<https://github.com/EnoxSoftware/MarkerLessARExample/releases>
 
 Manual
 -----
