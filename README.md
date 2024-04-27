@@ -15,10 +15,8 @@ Setup Tutorial & Demo Video
 
 Demo
 -----
-- WebGL
-<https://enoxsoftware.github.io/MarkerLessARExample/webgl_example/index.html>
-- Android
-<https://github.com/EnoxSoftware/MarkerLessARExample/releases>
+- WebGL (simd) <https://enoxsoftware.github.io/MarkerLessARExample/webgl_example/index.html>
+- Android <https://github.com/EnoxSoftware/MarkerLessARExample/releases>
 
 Manual
 -----
