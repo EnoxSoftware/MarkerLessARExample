@@ -1,5 +1,6 @@
 using OpenCVForUnity.CoreModule;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -72,12 +73,26 @@ namespace MarkerLessARExample
 
         public void OnTexture2DMarkerLessARExampleButtonClick()
         {
-            SceneManager.LoadScene("Texture2DMarkerLessARExample");
+            if (GraphicsSettings.defaultRenderPipeline == null)
+            {
+                SceneManager.LoadScene("Texture2DMarkerLessARExample_Built-in");
+            }
+            else
+            {
+                SceneManager.LoadScene("Texture2DMarkerLessARExample_SRP");
+            }
         }
 
         public void OnWebCamTextureMarkerLessARExampleButtonClick()
         {
-            SceneManager.LoadScene("WebCamTextureMarkerLessARExample");
+            if (GraphicsSettings.defaultRenderPipeline == null)
+            {
+                SceneManager.LoadScene("WebCamTextureMarkerLessARExample_Built-in");
+            }
+            else
+            {
+                SceneManager.LoadScene("WebCamTextureMarkerLessARExample_SRP");
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.UnityUtils.Helper;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -280,7 +281,14 @@ namespace MarkerLessARExample
 
                 Imgcodecs.imwrite(savePath + "/patternImg.jpg", patternMat);
 
-                SceneManager.LoadScene("WebCamTextureMarkerLessARExample");
+                if (GraphicsSettings.defaultRenderPipeline == null)
+                {
+                    SceneManager.LoadScene("WebCamTextureMarkerLessARExample_Built-in");
+                }
+                else
+                {
+                    SceneManager.LoadScene("WebCamTextureMarkerLessARExample_SRP");
+                }
             }
         }
     }
