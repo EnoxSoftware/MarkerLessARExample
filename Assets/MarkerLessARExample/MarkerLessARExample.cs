@@ -83,15 +83,15 @@ namespace MarkerLessARExample
             }
         }
 
-        public void OnWebCamTextureMarkerLessARExampleButtonClick()
+        public void OnMultiSourceMarkerLessARExampleButtonClick()
         {
             if (GraphicsSettings.defaultRenderPipeline == null)
             {
-                SceneManager.LoadScene("WebCamTextureMarkerLessARExample_Built-in");
+                SceneManager.LoadScene("MultiSourceMarkerLessARExample_Built-in");
             }
             else
             {
-                SceneManager.LoadScene("WebCamTextureMarkerLessARExample_SRP");
+                SceneManager.LoadScene("MultiSourceMarkerLessARExample_SRP");
             }
         }
     }

@@ -1086,7 +1086,7 @@ GameObject:
   - component: {fileID: 1410197063}
   - component: {fileID: 1410197062}
   m_Layer: 0
-  m_Name: Quad
+  m_Name: Texture2DMarkerLessARExample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

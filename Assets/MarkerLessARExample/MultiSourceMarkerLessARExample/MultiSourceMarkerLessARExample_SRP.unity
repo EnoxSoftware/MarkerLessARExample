@@ -2560,9 +2560,10 @@ GameObject:
   - component: {fileID: 1499518480}
   - component: {fileID: 1499518479}
   - component: {fileID: 1499518483}
+  - component: {fileID: 1499518485}
   - component: {fileID: 1499518484}
   m_Layer: 0
-  m_Name: Quad
+  m_Name: MultiSourceMarkerLessARExample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2683,25 +2684,50 @@ MonoBehaviour:
   m_GameObject: {fileID: 1499518478}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df35b0c19ca97734e87299a664cea35f, type: 3}
+  m_Script: {fileID: 11500000, guid: f0807ac37acb13a41a354abd1e677fbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  alignment: 1
+  offset: {x: 10, y: 10}
+  boxVisible: 1
+  boxWidth: 75
+  boxHeight: 30
+  padding: {x: 8, y: 5}
+  consoleHeight: 100
+--- !u!114 &1499518485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499518478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e564a549956aebc4d9acef3ff91b0981, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _requestedSource2MatHelperClassName: 0
+  _currentSource2MatHelperClassCategory: 0
   _requestedDeviceName: 
   _requestedWidth: 640
   _requestedHeight: 480
   _requestedIsFrontFacing: 0
   _requestedFPS: 30
-  _rotate90Degree: 0
-  _flipVertical: 0
-  _flipHorizontal: 0
+  _requestedVideoFilePath: MarkerLessARExample/MarkerLessARExample_TestVideo_640_640_30fps.mp4
+  _loop: 1
+  _requestedImageFilePath: MarkerLessARExample/TestImage.jpg
+  _repeat: 1
+  _sourceTexture: {fileID: 0}
+  _customClassComponent: {fileID: 0}
   _outputColorFormat: 3
-  _timeoutFrameCount: 300
-  onInitialized:
+  _timeoutFrameCount: 1500
+  _onInitialized:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1499518483}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnWebCamTextureToMatHelperInitialized
+        m_TargetAssemblyTypeName: MarkerLessARExample.MultiSourceMarkerLessARExample,
+          Assembly-CSharp
+        m_MethodName: OnSourceToMatHelperInitialized
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2711,12 +2737,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  onDisposed:
+  _onDisposed:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1499518483}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnWebCamTextureToMatHelperDisposed
+        m_TargetAssemblyTypeName: MarkerLessARExample.MultiSourceMarkerLessARExample,
+          Assembly-CSharp
+        m_MethodName: OnSourceToMatHelperDisposed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2726,12 +2753,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  onErrorOccurred:
+  _onErrorOccurred:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1499518483}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnWebCamTextureToMatHelperErrorOccurred
+        m_TargetAssemblyTypeName: MarkerLessARExample.MultiSourceMarkerLessARExample,
+          Assembly-CSharp
+        m_MethodName: OnSourceToMatHelperErrorOccurred
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2741,7 +2769,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  avoidAndroidFrontCameraLowLightIssue: 0
 --- !u!1 &1508174468
 GameObject:
   m_ObjectHideFlags: 0

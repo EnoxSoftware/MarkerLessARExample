@@ -14,7 +14,7 @@ namespace MarkerLessARExample
     /// <summary>
     /// Pattern capture.
     /// </summary>
-    [RequireComponent(typeof(WebCamTextureToMatHelper))]
+    [RequireComponent(typeof(MultiSource2MatHelper))]
     public class CapturePattern : MonoBehaviour
     {
         /// <summary>
@@ -28,9 +28,9 @@ namespace MarkerLessARExample
         Texture2D texture;
 
         /// <summary>
-        /// The webcam texture to mat helper.
+        /// The multi source to mat helper.
         /// </summary>
-        WebCamTextureToMatHelper webCamTextureToMatHelper;
+        MultiSource2MatHelper multiSource2MatHelper;
 
         /// <summary>
         /// The pattern rect.
@@ -56,6 +56,11 @@ namespace MarkerLessARExample
         /// The keypoints.
         /// </summary>
         MatOfKeyPoint keypoints;
+
+        /// <summary>
+        /// The FPS monitor.
+        /// </summary>
+        FpsMonitor fpsMonitor;
 
         // Use this for initialization
         void Start()
@@ -83,9 +88,9 @@ namespace MarkerLessARExample
                 }
             }
 
-            webCamTextureToMatHelper = gameObject.GetComponent<WebCamTextureToMatHelper>();
-
-            webCamTextureToMatHelper.Initialize();
+            multiSource2MatHelper = gameObject.GetComponent<MultiSource2MatHelper>();
+            multiSource2MatHelper.outputColorFormat = Source2MatHelperColorFormat.RGBA;
+            multiSource2MatHelper.Initialize();
 
             detector = ORB.create();
             detector.setMaxFeatures(1000);
@@ -93,27 +98,29 @@ namespace MarkerLessARExample
         }
 
         /// <summary>
-        /// Raises the web cam texture to mat helper initialized event.
+        /// Raises the source to mat helper initialized event.
         /// </summary>
-        public void OnWebCamTextureToMatHelperInitialized()
+        public void OnSourceToMatHelperInitialized()
         {
-            Debug.Log("OnWebCamTextureToMatHelperInitialized");
+            Debug.Log("OnSourceToMatHelperInitialized");
 
 
-            Mat webCamTextureMat = webCamTextureToMatHelper.GetMat();
+            Mat rgbaMat = multiSource2MatHelper.GetMat();
 
-            texture = new Texture2D(webCamTextureMat.width(), webCamTextureMat.height(), TextureFormat.RGB24, false);
-            rgbMat = new Mat(webCamTextureMat.rows(), webCamTextureMat.cols(), CvType.CV_8UC3);
-            outputMat = new Mat(webCamTextureMat.rows(), webCamTextureMat.cols(), CvType.CV_8UC3);
+            texture = new Texture2D(rgbaMat.width(), rgbaMat.height(), TextureFormat.RGB24, false);
+            rgbMat = new Mat(rgbaMat.rows(), rgbaMat.cols(), CvType.CV_8UC3);
+            outputMat = new Mat(rgbaMat.rows(), rgbaMat.cols(), CvType.CV_8UC3);
 
-            gameObject.transform.localScale = new Vector3(webCamTextureMat.width(), webCamTextureMat.height(), 1);
+            // Set the Texture2D as the main texture of the Renderer component attached to the game object
+            gameObject.GetComponent<Renderer>().material.mainTexture = texture;
 
+            // Adjust the scale of the game object to match the dimensions of the texture
+            gameObject.transform.localScale = new Vector3(rgbaMat.width(), rgbaMat.height(), 1);
             Debug.Log("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
 
-
-            float width = webCamTextureMat.width();
-            float height = webCamTextureMat.height();
-
+            // Adjust the orthographic size of the main Camera to fit the aspect ratio of the image
+            float width = rgbaMat.width();
+            float height = rgbaMat.height();
             float widthScale = (float)Screen.width / width;
             float heightScale = (float)Screen.height / height;
             if (widthScale < heightScale)
@@ -125,27 +132,23 @@ namespace MarkerLessARExample
                 Camera.main.orthographicSize = height / 2;
             }
 
-            gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+
+            // If the WebCam is front facing, flip the Mat horizontally. Required for successful detection.
+            if (multiSource2MatHelper.source2MatHelper is WebCamTexture2MatHelper webCamHelper)
+                webCamHelper.flipHorizontal = webCamHelper.IsFrontFacing();
 
 
-            //if WebCamera is frontFaceing,flip Mat.
-            if (webCamTextureToMatHelper.GetWebCamDevice().isFrontFacing)
-            {
-                webCamTextureToMatHelper.flipHorizontal = true;
-            }
+            int patternWidth = (int)(Mathf.Min(rgbaMat.width(), rgbaMat.height()) * 0.8f);
 
-
-            int patternWidth = (int)(Mathf.Min(webCamTextureMat.width(), webCamTextureMat.height()) * 0.8f);
-
-            patternRect = new OpenCVForUnity.CoreModule.Rect(webCamTextureMat.width() / 2 - patternWidth / 2, webCamTextureMat.height() / 2 - patternWidth / 2, patternWidth, patternWidth);
+            patternRect = new OpenCVForUnity.CoreModule.Rect(rgbaMat.width() / 2 - patternWidth / 2, rgbaMat.height() / 2 - patternWidth / 2, patternWidth, patternWidth);
         }
 
         /// <summary>
-        /// Raises the web cam texture to mat helper disposed event.
+        /// Raises the source to mat helper disposed event.
         /// </summary>
-        public void OnWebCamTextureToMatHelperDisposed()
+        public void OnSourceToMatHelperDisposed()
         {
-            Debug.Log("OnWebCamTextureToMatHelperDisposed");
+            Debug.Log("OnSourceToMatHelperDisposed");
 
             if (rgbMat != null)
             {
@@ -158,20 +161,26 @@ namespace MarkerLessARExample
         }
 
         /// <summary>
-        /// Raises the web cam texture to mat helper error occurred event.
+        /// Raises the source to mat helper error occurred event.
         /// </summary>
         /// <param name="errorCode">Error code.</param>
-        public void OnWebCamTextureToMatHelperErrorOccurred(WebCamTextureToMatHelper.ErrorCode errorCode)
+        /// <param name="message">Message.</param>
+        public void OnSourceToMatHelperErrorOccurred(Source2MatHelperErrorCode errorCode, string message)
         {
-            Debug.Log("OnWebCamTextureToMatHelperErrorOccurred " + errorCode);
+            Debug.Log("OnSourceToMatHelperErrorOccurred " + errorCode + ":" + message);
+
+            if (fpsMonitor != null)
+            {
+                fpsMonitor.consoleText = "ErrorCode: " + errorCode + ":" + message;
+            }
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (webCamTextureToMatHelper.IsPlaying() && webCamTextureToMatHelper.DidUpdateThisFrame())
+            if (multiSource2MatHelper.IsPlaying() && multiSource2MatHelper.DidUpdateThisFrame())
             {
-                Mat rgbaMat = webCamTextureToMatHelper.GetMat();
+                Mat rgbaMat = multiSource2MatHelper.GetMat();
 
                 Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB);
                 Imgproc.cvtColor(rgbaMat, outputMat, Imgproc.COLOR_RGBA2RGB);
@@ -183,7 +192,7 @@ namespace MarkerLessARExample
 
                 Imgproc.rectangle(rgbMat, patternRect.tl(), patternRect.br(), new Scalar(255, 0, 0, 255), 5);
 
-                Utils.fastMatToTexture2D(rgbMat, texture);
+                Utils.matToTexture2D(rgbMat, texture);
             }
         }
 
@@ -192,7 +201,7 @@ namespace MarkerLessARExample
         /// </summary>
         void OnDestroy()
         {
-            webCamTextureToMatHelper.Dispose();
+            multiSource2MatHelper.Dispose();
 
             detector.Dispose();
             if (keypoints != null)
@@ -214,7 +223,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnPlayButtonClick()
         {
-            webCamTextureToMatHelper.Play();
+            multiSource2MatHelper.Play();
         }
 
         /// <summary>
@@ -222,7 +231,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnPauseButtonClick()
         {
-            webCamTextureToMatHelper.Pause();
+            multiSource2MatHelper.Pause();
         }
 
         /// <summary>
@@ -230,7 +239,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnStopButtonClick()
         {
-            webCamTextureToMatHelper.Stop();
+            multiSource2MatHelper.Stop();
         }
 
         /// <summary>
@@ -238,7 +247,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnChangeCameraButtonClick()
         {
-            webCamTextureToMatHelper.requestedIsFrontFacing = !webCamTextureToMatHelper.IsFrontFacing();
+            multiSource2MatHelper.requestedIsFrontFacing = !multiSource2MatHelper.requestedIsFrontFacing;
         }
 
         /// <summary>
@@ -283,11 +292,11 @@ namespace MarkerLessARExample
 
                 if (GraphicsSettings.defaultRenderPipeline == null)
                 {
-                    SceneManager.LoadScene("WebCamTextureMarkerLessARExample_Built-in");
+                    SceneManager.LoadScene("MultiSourceMarkerLessARExample_Built-in");
                 }
                 else
                 {
-                    SceneManager.LoadScene("WebCamTextureMarkerLessARExample_SRP");
+                    SceneManager.LoadScene("MultiSourceMarkerLessARExample_SRP");
                 }
             }
         }
