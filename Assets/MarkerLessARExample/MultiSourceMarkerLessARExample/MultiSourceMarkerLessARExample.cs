@@ -1,9 +1,12 @@
-using OpenCVForUnity.Calib3dModule;
 using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.Extensions;
+using OpenCVForUnity.Extensions.SourceToMat;
+using OpenCVForUnity.GeometryModule;
 using OpenCVForUnity.ImgcodecsModule;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityIntegration;
-using OpenCVForUnity.UnityIntegration.Helper.Source2Mat;
+using OpenCVForUnity.UnityIntegration.Helper.SourceToMat;
+using OpenCVForUnity.UnityIntegration.Helper.UI;
 using OpenCVMarkerLessAR;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,7 +18,7 @@ namespace MarkerLessARExample
     /// MultiSource Markerless AR Example
     /// This code is a rewrite of https://github.com/MasteringOpenCV/code/tree/master/Chapter3_MarkerlessAR using "OpenCV for Unity".
     /// </summary>
-    [RequireComponent(typeof(MultiSource2MatHelper))]
+    [RequireComponent(typeof(MultiSourceToMatHelper))]
     public class MultiSourceMarkerLessARExample : MonoBehaviour
     {
         /// <summary>
@@ -96,65 +99,70 @@ namespace MarkerLessARExample
         /// <summary>
         /// The pattern mat.
         /// </summary>
-        Mat patternMat;
+        private Mat patternMat;
 
         /// <summary>
         /// The texture.
         /// </summary>
-        Texture2D texture;
+        private Texture2D texture;
+
+        /// <summary>
+        /// The pattern preview texture created at runtime.
+        /// </summary>
+        private Texture2D patternPreviewTexture;
 
         /// <summary>
         /// The multi source to mat helper.
         /// </summary>
-        MultiSource2MatHelper multiSource2MatHelper;
+        private MultiSourceToMatHelper multiSourceToMatHelper;
 
         /// <summary>
         /// The gray mat.
         /// </summary>
-        Mat grayMat;
+        private Mat grayMat;
 
         /// <summary>
         /// The cameraparam matrix.
         /// </summary>
-        Mat camMatrix;
+        private Mat camMatrix;
 
         /// <summary>
         /// The dist coeffs.
         /// </summary>
-        MatOfDouble distCoeffs;
+        private MatOfDouble distCoeffs;
 
         /// <summary>
         /// The matrix that inverts the Y axis.
         /// </summary>
-        Matrix4x4 invertYM;
+        private Matrix4x4 invertYM;
 
         /// <summary>
         /// The matrix that inverts the Z axis.
         /// </summary>
-        Matrix4x4 invertZM;
+        private Matrix4x4 invertZM;
 
         /// <summary>
         /// The pattern.
         /// </summary>
-        Pattern pattern;
+        private Pattern pattern;
 
         /// <summary>
         /// The pattern tracking info.
         /// </summary>
-        PatternTrackingInfo patternTrackingInfo;
+        private PatternTrackingInfo patternTrackingInfo;
 
         /// <summary>
         /// The pattern detector.
         /// </summary>
-        PatternDetector patternDetector;
+        private PatternDetector patternDetector;
 
         /// <summary>
         /// The FPS monitor.
         /// </summary>
-        FpsMonitor fpsMonitor;
+        private FpsMonitor fpsMonitor;
 
         // Use this for initialization
-        void Start()
+        private void Start()
         {
             displayAxesToggle.isOn = displayAxes;
             axes.SetActive(displayAxes);
@@ -165,13 +173,13 @@ namespace MarkerLessARExample
 
             ARGameObject.gameObject.SetActive(false);
 
-            multiSource2MatHelper = gameObject.GetComponent<MultiSource2MatHelper>();
-            multiSource2MatHelper.OutputColorFormat = Source2MatHelperColorFormat.RGBA;
+            multiSourceToMatHelper = gameObject.GetComponent<MultiSourceToMatHelper>();
+            multiSourceToMatHelper.OutputColorFormat = SourceToMatColorFormat.RGBA;
 
             if (patternTexture != null)
             {
                 patternMat = new Mat(patternTexture.height, patternTexture.width, CvType.CV_8UC3);
-                OpenCVMatUtils.Texture2DToMat(patternTexture, patternMat);
+                OpenCVMatUnityUtils.Texture2DToMat(patternTexture, patternMat);
                 Imgproc.cvtColor(patternMat, patternMat, Imgproc.COLOR_RGB2BGR);
                 Debug.Log("patternMat dst ToString " + patternMat.ToString());
 
@@ -190,13 +198,13 @@ namespace MarkerLessARExample
             {
                 Imgproc.cvtColor(patternMat, patternMat, Imgproc.COLOR_BGR2RGB);
 
-                Texture2D patternTexture = new Texture2D(patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
+                patternPreviewTexture = new Texture2D(patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
 
                 //To reuse mat, set the flipAfter flag to true.
-                OpenCVMatUtils.MatToTexture2D(patternMat, patternTexture, true, 0, true);
+                OpenCVMatUnityUtils.MatToTexture2D(patternMat, patternPreviewTexture, true, 0, true);
                 Debug.Log("patternMat dst ToString " + patternMat.ToString());
 
-                patternRawImage.texture = patternTexture;
+                patternRawImage.texture = patternPreviewTexture;
                 patternRawImage.rectTransform.localScale = new Vector3(1.0f, (float)patternMat.height() / (float)patternMat.width(), 1.0f);
 
                 pattern = new Pattern();
@@ -210,7 +218,7 @@ namespace MarkerLessARExample
                 {
                     patternDetector.train(pattern);
 
-                    multiSource2MatHelper.Initialize();
+                    multiSourceToMatHelper.Initialize();
                 }
                 else
                 {
@@ -226,7 +234,7 @@ namespace MarkerLessARExample
         {
             Debug.Log("OnSourceToMatHelperInitialized");
 
-            Mat rgbaMat = multiSource2MatHelper.GetMat();
+            Mat rgbaMat = multiSourceToMatHelper.FrameMat;
 
             texture = new Texture2D(rgbaMat.width(), rgbaMat.height(), TextureFormat.RGBA32, false);
             grayMat = new Mat(rgbaMat.rows(), rgbaMat.cols(), CvType.CV_8UC1);
@@ -254,7 +262,6 @@ namespace MarkerLessARExample
                 Camera.main.orthographicSize = height / 2;
             }
 
-
             //set cameraparam
             int max_d = (int)Mathf.Max(width, height);
             double fx = max_d;
@@ -273,10 +280,8 @@ namespace MarkerLessARExample
             camMatrix.put(2, 2, 1.0f);
             Debug.Log("camMatrix " + camMatrix.dump());
 
-
             distCoeffs = new MatOfDouble(0, 0, 0, 0);
             Debug.Log("distCoeffs " + distCoeffs.dump());
-
 
             //calibration camera
             Size imageSize = new Size(width * imageSizeScale, height * imageSizeScale);
@@ -288,7 +293,7 @@ namespace MarkerLessARExample
             Point principalPoint = new Point(0, 0);
             double[] aspectratio = new double[1];
 
-            Calib3d.calibrationMatrixValues(camMatrix, imageSize, apertureWidth, apertureHeight, fovx, fovy, focalLength, principalPoint, aspectratio);
+            Geometry.calibrationMatrixValues(camMatrix, imageSize, apertureWidth, apertureHeight, fovx, fovy, focalLength, principalPoint, aspectratio);
 
             Debug.Log("imageSize " + imageSize.ToString());
             Debug.Log("apertureWidth " + apertureWidth);
@@ -299,14 +304,12 @@ namespace MarkerLessARExample
             Debug.Log("principalPoint " + principalPoint.ToString());
             Debug.Log("aspectratio " + aspectratio[0]);
 
-
-            //To convert the difference of the FOV value of the OpenCV and Unity. 
+            //To convert the difference of the FOV value of the OpenCV and Unity.
             double fovXScale = (2.0 * Mathf.Atan((float)(imageSize.width / (2.0 * fx)))) / (Mathf.Atan2((float)cx, (float)fx) + Mathf.Atan2((float)(imageSize.width - cx), (float)fx));
             double fovYScale = (2.0 * Mathf.Atan((float)(imageSize.height / (2.0 * fy)))) / (Mathf.Atan2((float)cy, (float)fy) + Mathf.Atan2((float)(imageSize.height - cy), (float)fy));
 
             Debug.Log("fovXScale " + fovXScale);
             Debug.Log("fovYScale " + fovYScale);
-
 
             //Adjust Unity Camera FOV https://github.com/opencv/opencv/commit/8ed1945ccd52501f5ab22bdec6aa1f91f1e2cfd4
             if (widthScale < heightScale)
@@ -318,17 +321,22 @@ namespace MarkerLessARExample
                 ARCamera.fieldOfView = (float)(fovy[0] * fovYScale);
             }
 
-
             invertYM = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, -1, 1));
             Debug.Log("invertYM " + invertYM.ToString());
 
             invertZM = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, 1, -1));
             Debug.Log("invertZM " + invertZM.ToString());
 
-
             // If the WebCam is front facing, flip the Mat horizontally. Required for successful detection.
-            if (multiSource2MatHelper.Source2MatHelper is WebCamTexture2MatHelper webCamHelper)
-                webCamHelper.FlipHorizontal = webCamHelper.IsFrontFacing();
+            if (multiSourceToMatHelper.ActiveHelper is ICameraFacingToMatHelperControls cameraFacingControls)
+            {
+                multiSourceToMatHelper.ActiveHelper.FlipHorizontal = cameraFacingControls.IsFrontFacing;
+            }
+
+            if (!multiSourceToMatHelper.IsPlaying && !multiSourceToMatHelper.IsPaused)
+            {
+                multiSourceToMatHelper.Play();
+            }
         }
 
         /// <summary>
@@ -337,9 +345,32 @@ namespace MarkerLessARExample
         public void OnSourceToMatHelperDisposed()
         {
             Debug.Log("OnSourceToMatHelperDisposed");
+            DisposeFrameResources();
+        }
 
-            if (grayMat != null)
-                grayMat.Dispose();
+        /// <summary>
+        /// Raises the frame mat layout changed event.
+        /// </summary>
+        public void OnFrameMatLayoutChanged()
+        {
+            DisposeFrameResources();
+            OnSourceToMatHelperInitialized();
+        }
+
+        private void DisposeFrameResources()
+        {
+            if (texture != null)
+            {
+                Destroy(texture);
+                texture = null;
+            }
+
+            grayMat?.Dispose();
+            grayMat = null;
+            camMatrix?.Dispose();
+            camMatrix = null;
+            distCoeffs?.Dispose();
+            distCoeffs = null;
         }
 
         /// <summary>
@@ -347,7 +378,7 @@ namespace MarkerLessARExample
         /// </summary>
         /// <param name="errorCode">Error code.</param>
         /// <param name="message">Message.</param>
-        public void OnSourceToMatHelperErrorOccurred(Source2MatHelperErrorCode errorCode, string message)
+        public void OnSourceToMatHelperErrorOccurred(SourceToMatErrorCode errorCode, string message)
         {
             Debug.Log("OnSourceToMatHelperErrorOccurred " + errorCode + ":" + message);
 
@@ -358,15 +389,14 @@ namespace MarkerLessARExample
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
-            if (multiSource2MatHelper.IsPlaying() && multiSource2MatHelper.DidUpdateThisFrame())
+            if (multiSourceToMatHelper.IsPlaying && multiSourceToMatHelper.DidUpdateThisFrame)
             {
 
-                Mat rgbaMat = multiSource2MatHelper.GetMat();
+                Mat rgbaMat = multiSourceToMatHelper.FrameMat;
 
                 Imgproc.cvtColor(rgbaMat, grayMat, Imgproc.COLOR_RGBA2GRAY);
-
 
                 bool patternFound = patternDetector.findPattern(grayMat, patternTrackingInfo);
 
@@ -377,7 +407,6 @@ namespace MarkerLessARExample
 
                     //Marker to Camera Coordinate System Convert Matrix
                     Matrix4x4 transformationM = patternTrackingInfo.pose3d;
-
 
                     // right-handed coordinates system (OpenCV) to left-handed one (Unity)
                     // https://stackoverflow.com/questions/30234945/change-handedness-of-a-row-major-4x4-transformation-matrix
@@ -410,19 +439,26 @@ namespace MarkerLessARExample
                     ARGameObject.GetComponent<DelayableSetActive>().SetActive(false, 0.5f);
                 }
 
-                OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
+                OpenCVMatUnityUtils.MatToTexture2D(rgbaMat, texture);
             }
         }
 
         /// <summary>
         /// Raises the destroy event.
         /// </summary>
-        void OnDestroy()
+        private void OnDestroy()
         {
-            multiSource2MatHelper.Dispose();
+            if (patternPreviewTexture != null)
+            {
+                Destroy(patternPreviewTexture);
+                patternPreviewTexture = null;
+            }
 
             if (patternMat != null)
+            {
                 patternMat.Dispose();
+                patternMat = null;
+            }
         }
 
         /// <summary>
@@ -438,7 +474,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnPlayButtonClick()
         {
-            multiSource2MatHelper.Play();
+            multiSourceToMatHelper.Play();
         }
 
         /// <summary>
@@ -446,7 +482,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnPauseButtonClick()
         {
-            multiSource2MatHelper.Pause();
+            multiSourceToMatHelper.Pause();
         }
 
         /// <summary>
@@ -454,7 +490,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnStopButtonClick()
         {
-            multiSource2MatHelper.Stop();
+            multiSourceToMatHelper.Stop();
         }
 
         /// <summary>
@@ -462,7 +498,10 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnChangeCameraButtonClick()
         {
-            multiSource2MatHelper.RequestedIsFrontFacing = !multiSource2MatHelper.RequestedIsFrontFacing;
+            if (multiSourceToMatHelper.ActiveHelper is ICameraFacingToMatHelperControls cameraFacingControls)
+            {
+                cameraFacingControls.RequestedIsFrontFacing = !cameraFacingControls.RequestedIsFrontFacing;
+            }
         }
 
         /// <summary>

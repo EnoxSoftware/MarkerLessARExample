@@ -1,4 +1,5 @@
 using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.UnityIntegration;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
@@ -14,14 +15,17 @@ namespace MarkerLessARExample
         public Text exampleTitle;
         public Text versionInfo;
         public ScrollRect scrollRect;
-        static float verticalNormalizedPosition = 1f;
+#if UNITY_6000_5_OR_NEWER
+        [Unity.Scripting.LifecycleManagement.NoAutoStaticsCleanup]
+#endif
+        private static float verticalNormalizedPosition = 1f;
 
         // Use this for initialization
-        void Start()
+        private void Start()
         {
             exampleTitle.text = "MarkerLessAR Example " + Application.version;
 
-            versionInfo.text = Core.NATIVE_LIBRARY_NAME + " " + OpenCVForUnity.UnityIntegration.OpenCVEnv.GetVersion() + " (" + Core.VERSION + ")";
+            versionInfo.text = Core.NATIVE_LIBRARY_NAME + " " + OpenCVForUnityEnv.GetVersion() + " (" + Core.VERSION + ")";
             versionInfo.text += " / UnityEditor " + Application.unityVersion;
             versionInfo.text += " / ";
 
@@ -55,7 +59,7 @@ namespace MarkerLessARExample
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
 
         }
@@ -65,7 +69,6 @@ namespace MarkerLessARExample
             verticalNormalizedPosition = scrollRect.verticalNormalizedPosition;
         }
 
-
         public void OnShowLicenseButtonClick()
         {
             SceneManager.LoadScene("ShowLicense");
@@ -73,7 +76,7 @@ namespace MarkerLessARExample
 
         public void OnTexture2DMarkerLessARExampleButtonClick()
         {
-            if (GraphicsSettings.defaultRenderPipeline == null)
+            if (GraphicsSettings.currentRenderPipeline == null)
             {
                 SceneManager.LoadScene("Texture2DMarkerLessARExample_Built-in");
             }
@@ -85,7 +88,7 @@ namespace MarkerLessARExample
 
         public void OnMultiSourceMarkerLessARExampleButtonClick()
         {
-            if (GraphicsSettings.defaultRenderPipeline == null)
+            if (GraphicsSettings.currentRenderPipeline == null)
             {
                 SceneManager.LoadScene("MultiSourceMarkerLessARExample_Built-in");
             }

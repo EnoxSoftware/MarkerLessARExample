@@ -1,7 +1,7 @@
-using OpenCVForUnity.Calib3dModule;
-using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.ImgprocModule;
 using System.Collections.Generic;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.GeometryModule;
+using OpenCVForUnity.ImgprocModule;
 using UnityEngine;
 
 namespace OpenCVMarkerLessAR
@@ -50,12 +50,12 @@ namespace OpenCVMarkerLessAR
             Mat raux = new Mat();
             Mat taux = new Mat();
 
-            Calib3d.solvePnP(pattern.points3d, points2d, camMatrix, distCoeff, raux, taux);
+            Geometry.solvePnP(pattern.points3d, points2d, camMatrix, distCoeff, raux, taux);
             raux.convertTo(Rvec, CvType.CV_32F);
             taux.convertTo(Tvec, CvType.CV_32F);
 
             Mat rotMat = new Mat(3, 3, CvType.CV_64FC1);
-            Calib3d.Rodrigues(Rvec, rotMat);
+            Geometry.Rodrigues(Rvec, rotMat);
 
             pose3d.SetRow(0, new Vector4((float)rotMat.get(0, 0)[0], (float)rotMat.get(0, 1)[0], (float)rotMat.get(0, 2)[0], (float)Tvec.get(0, 0)[0]));
             pose3d.SetRow(1, new Vector4((float)rotMat.get(1, 0)[0], (float)rotMat.get(1, 1)[0], (float)rotMat.get(1, 2)[0], (float)Tvec.get(1, 0)[0]));

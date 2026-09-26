@@ -1,8 +1,8 @@
-using OpenCVForUnity.Calib3dModule;
-using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.Features2dModule;
-using OpenCVForUnity.ImgprocModule;
 using System.Collections.Generic;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.FeaturesModule;
+using OpenCVForUnity.GeometryModule;
+using OpenCVForUnity.ImgprocModule;
 using UnityEngine;
 
 namespace OpenCVMarkerLessAR
@@ -31,62 +31,62 @@ namespace OpenCVMarkerLessAR
         /// <summary>
         /// The m_query keypoints.
         /// </summary>
-        MatOfKeyPoint m_queryKeypoints;
+        private MatOfKeyPoint m_queryKeypoints;
 
         /// <summary>
         /// The m_query descriptors.
         /// </summary>
-        Mat m_queryDescriptors;
+        private Mat m_queryDescriptors;
 
         /// <summary>
         /// The m_matches.
         /// </summary>
-        MatOfDMatch m_matches;
+        private MatOfDMatch m_matches;
 
         /// <summary>
         /// The m_knn matches.
         /// </summary>
-        List<MatOfDMatch> m_knnMatches;
+        private List<MatOfDMatch> m_knnMatches;
 
         /// <summary>
         /// The m_gray image.
         /// </summary>
-        Mat m_grayImg;
+        private Mat m_grayImg;
 
         /// <summary>
         /// The m_warped image.
         /// </summary>
-        Mat m_warpedImg;
+        private Mat m_warpedImg;
 
         /// <summary>
         /// The m_rough homography.
         /// </summary>
-        Mat m_roughHomography;
+        private Mat m_roughHomography;
 
         /// <summary>
         /// The m_refined homography.
         /// </summary>
-        Mat m_refinedHomography;
+        private Mat m_refinedHomography;
 
         /// <summary>
         /// The m_pattern.
         /// </summary>
-        Pattern m_pattern;
+        private Pattern m_pattern;
 
         /// <summary>
         /// The m_detector.
         /// </summary>
-        ORB m_detector;
+        private ORB m_detector;
 
         /// <summary>
         /// The m_extractor.
         /// </summary>
-        ORB m_extractor;
+        private ORB m_extractor;
 
         /// <summary>
         /// The m_matcher.
         /// </summary>
-        DescriptorMatcher m_matcher;
+        private DescriptorMatcher m_matcher;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PatternDetector"/> class.
@@ -188,7 +188,6 @@ namespace OpenCVMarkerLessAR
 
             pattern.points2d.fromList(points2dList);
 
-
             //points3dList.Add (new Point3 (-unitW, -unitH, 0));
             //points3dList.Add (new Point3 (unitW, -unitH, 0));
             //points3dList.Add (new Point3 (unitW, unitH, 0));
@@ -200,7 +199,6 @@ namespace OpenCVMarkerLessAR
             points3dList.Add(new Point3(-0.5f, +0.5f, 0));
 
             pattern.points3d.fromList(points3dList);
-
 
             return extractFeatures(pattern.grayImg, pattern.keypoints, pattern.descriptors);
         }
@@ -219,13 +217,14 @@ namespace OpenCVMarkerLessAR
             // Extract feature points from input gray image
             bool result = extractFeatures(m_grayImg, m_queryKeypoints, m_queryDescriptors);
             if (!result)
+            {
                 return false;
+            }
 
             // Get matches with current pattern
             getMatches(m_queryDescriptors, m_matches);
 
             //(GameObject.Find ("DebugHelpers").GetComponent<DebugHelpers> ()).showMat (DebugHelpers.getMatchesImage (m_grayImg, m_pattern.grayImg, m_queryKeypoints, m_pattern.keypoints, m_matches, 100));
-
 
             // Find homography transformation and detect good matches
             bool homographyFound = refineMatchesWithHomography(
@@ -246,7 +245,6 @@ namespace OpenCVMarkerLessAR
                     // Warp image using found homography
                     Imgproc.warpPerspective(m_grayImg, m_warpedImg, m_roughHomography, m_pattern.size, Imgproc.WARP_INVERSE_MAP | Imgproc.INTER_CUBIC);
 
-
                     //(GameObject.Find ("DebugHelpers").GetComponent<DebugHelpers> ()).showMat(m_warpedImg);
 
                     // Get refined matches:
@@ -256,7 +254,9 @@ namespace OpenCVMarkerLessAR
                         // Detect features on warped image
                         result = extractFeatures(m_warpedImg, warpedKeypoints, m_queryDescriptors);
                         if (!result)
+                        {
                             return false;
+                        }
 
                         // Match with pattern
                         getMatches(m_queryDescriptors, refinedMatches);
@@ -282,7 +282,6 @@ namespace OpenCVMarkerLessAR
 
                     //Core.perspectiveTransform (m_pattern.points2d, info.points2d, m_roughHomography);
                     //info.draw2dContour (image, new Scalar (200, 0, 0, 255));
-
 
                     // Transform contour with precise homography
 
@@ -316,14 +315,20 @@ namespace OpenCVMarkerLessAR
         /// </summary>
         /// <param name="image">Image.</param>
         /// <param name="gray">Gray.</param>
-        static void getGray(Mat image, Mat gray)
+        private static void getGray(Mat image, Mat gray)
         {
             if (image.channels() == 3)
+            {
                 Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);
+            }
             else if (image.channels() == 4)
+            {
                 Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGBA2GRAY);
+            }
             else if (image.channels() == 1)
+            {
                 image.copyTo(gray);
+            }
         }
 
         /// <summary>
@@ -333,7 +338,7 @@ namespace OpenCVMarkerLessAR
         /// <param name="image">Image.</param>
         /// <param name="keypoints">Keypoints.</param>
         /// <param name="descriptors">Descriptors.</param>
-        bool extractFeatures(Mat image, MatOfKeyPoint keypoints, Mat descriptors)
+        private bool extractFeatures(Mat image, MatOfKeyPoint keypoints, Mat descriptors)
         {
             if (image.total() == 0)
             {
@@ -346,17 +351,21 @@ namespace OpenCVMarkerLessAR
 
             m_detector.detect(image, keypoints);
             if (keypoints.total() == 0)
+            {
                 return false;
+            }
 
             m_extractor.compute(image, keypoints, descriptors);
             if (keypoints.total() == 0)
+            {
                 return false;
+            }
 
             //Debug.Log ("extractFeatures true");
 
             //Mat tmpImage = new Mat();
             //
-            //Features2d.drawKeypoints(image, keypoints, tmpImage);
+            //Features.drawKeypoints(image, keypoints, tmpImage);
             //
             //DebugHelpers.showMat(tmpImage);
 
@@ -368,7 +377,7 @@ namespace OpenCVMarkerLessAR
         /// </summary>
         /// <param name="queryDescriptors">Query descriptors.</param>
         /// <param name="matches">Matches.</param>
-        void getMatches(Mat queryDescriptors, MatOfDMatch matches)
+        private void getMatches(Mat queryDescriptors, MatOfDMatch matches)
         {
             List<DMatch> matchesList = new List<DMatch>();
             //matches.clear();
@@ -420,7 +429,7 @@ namespace OpenCVMarkerLessAR
         /// <param name="reprojectionThreshold">Reprojection threshold.</param>
         /// <param name="matches">Matches.</param>
         /// <param name="homography">Homography.</param>
-        static bool refineMatchesWithHomography
+        private static bool refineMatchesWithHomography
         (
             MatOfKeyPoint queryKeypoints,
             MatOfKeyPoint trainKeypoints,
@@ -438,7 +447,9 @@ namespace OpenCVMarkerLessAR
             List<DMatch> matchesList = matches.toList();
 
             if (matchesList.Count < minNumberMatchesAllowed)
+            {
                 return false;
+            }
 
             // Prepare data for cv::findHomography
             List<Point> srcPointsList = new List<Point>(matchesList.Count);
@@ -461,14 +472,16 @@ namespace OpenCVMarkerLessAR
                 //Debug.Log ("srcPoints " + srcPoints.ToString ());
                 //Debug.Log ("dstPoints " + dstPoints.ToString ());
 
-                Calib3d.findHomography(srcPoints,
+                Geometry.findHomography(srcPoints,
                     dstPoints,
-                    Calib3d.FM_RANSAC,
+                    Geometry.FM_RANSAC,
                     reprojectionThreshold,
                     inliersMask, 2000, 0.955).copyTo(homography);
 
                 if (homography.rows() != 3 || homography.cols() != 3)
+                {
                     return false;
+                }
 
                 //Debug.Log ("homography " + homography.ToString ());
                 //Debug.Log ("inliersMask " + inliersMask.dump ());
@@ -479,7 +492,9 @@ namespace OpenCVMarkerLessAR
                 for (int i = 0; i < inliersMaskList.Count; i++)
                 {
                     if (inliersMaskList[i] == 1)
+                    {
                         inliers.Add(matchesList[i]);
+                    }
                 }
 
                 matches.fromList(inliers);

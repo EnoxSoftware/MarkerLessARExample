@@ -1,9 +1,11 @@
 using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.Features2dModule;
+using OpenCVForUnity.Extensions.SourceToMat;
+using OpenCVForUnity.FeaturesModule;
 using OpenCVForUnity.ImgcodecsModule;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityIntegration;
-using OpenCVForUnity.UnityIntegration.Helper.Source2Mat;
+using OpenCVForUnity.UnityIntegration.Helper.SourceToMat;
+using OpenCVForUnity.UnityIntegration.Helper.UI;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
@@ -14,7 +16,7 @@ namespace MarkerLessARExample
     /// <summary>
     /// Pattern capture.
     /// </summary>
-    [RequireComponent(typeof(MultiSource2MatHelper))]
+    [RequireComponent(typeof(MultiSourceToMatHelper))]
     public class CapturePattern : MonoBehaviour
     {
         /// <summary>
@@ -25,45 +27,50 @@ namespace MarkerLessARExample
         /// <summary>
         /// The texture.
         /// </summary>
-        Texture2D texture;
+        private Texture2D texture;
+
+        /// <summary>
+        /// The pattern preview texture created at runtime.
+        /// </summary>
+        private Texture2D patternPreviewTexture;
 
         /// <summary>
         /// The multi source to mat helper.
         /// </summary>
-        MultiSource2MatHelper multiSource2MatHelper;
+        private MultiSourceToMatHelper multiSourceToMatHelper;
 
         /// <summary>
         /// The pattern rect.
         /// </summary>
-        OpenCVForUnity.CoreModule.Rect patternRect;
+        private OpenCVForUnity.CoreModule.Rect patternRect;
 
         /// <summary>
         /// The rgb mat.
         /// </summary>
-        Mat rgbMat;
+        private Mat rgbMat;
 
         /// <summary>
         /// The output mat.
         /// </summary>
-        Mat outputMat;
+        private Mat outputMat;
 
         /// <summary>
         /// The detector.
         /// </summary>
-        ORB detector;
+        private ORB detector;
 
         /// <summary>
         /// The keypoints.
         /// </summary>
-        MatOfKeyPoint keypoints;
+        private MatOfKeyPoint keypoints;
 
         /// <summary>
         /// The FPS monitor.
         /// </summary>
-        FpsMonitor fpsMonitor;
+        private FpsMonitor fpsMonitor;
 
         // Use this for initialization
-        void Start()
+        private void Start()
         {
             //Utils.setDebugMode(true);
 
@@ -77,20 +84,20 @@ namespace MarkerLessARExample
                 {
                     Imgproc.cvtColor(patternMat, patternMat, Imgproc.COLOR_BGR2RGB);
 
-                    Texture2D patternTexture = new Texture2D(patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
+                    patternPreviewTexture = new Texture2D(patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
 
-                    OpenCVMatUtils.MatToTexture2D(patternMat, patternTexture);
+                    OpenCVMatUnityUtils.MatToTexture2D(patternMat, patternPreviewTexture);
 
-                    patternRawImage.texture = patternTexture;
+                    patternRawImage.texture = patternPreviewTexture;
                     patternRawImage.rectTransform.localScale = new Vector3(1.0f, (float)patternMat.height() / (float)patternMat.width(), 1.0f);
 
                     patternRawImage.gameObject.SetActive(true);
                 }
             }
 
-            multiSource2MatHelper = gameObject.GetComponent<MultiSource2MatHelper>();
-            multiSource2MatHelper.OutputColorFormat = Source2MatHelperColorFormat.RGBA;
-            multiSource2MatHelper.Initialize();
+            multiSourceToMatHelper = gameObject.GetComponent<MultiSourceToMatHelper>();
+            multiSourceToMatHelper.OutputColorFormat = SourceToMatColorFormat.RGBA;
+            multiSourceToMatHelper.Initialize();
 
             detector = ORB.create();
             detector.setMaxFeatures(1000);
@@ -104,8 +111,7 @@ namespace MarkerLessARExample
         {
             Debug.Log("OnSourceToMatHelperInitialized");
 
-
-            Mat rgbaMat = multiSource2MatHelper.GetMat();
+            Mat rgbaMat = multiSourceToMatHelper.FrameMat;
 
             texture = new Texture2D(rgbaMat.width(), rgbaMat.height(), TextureFormat.RGB24, false);
             rgbMat = new Mat(rgbaMat.rows(), rgbaMat.cols(), CvType.CV_8UC3);
@@ -132,15 +138,20 @@ namespace MarkerLessARExample
                 Camera.main.orthographicSize = height / 2;
             }
 
-
             // If the WebCam is front facing, flip the Mat horizontally. Required for successful detection.
-            if (multiSource2MatHelper.Source2MatHelper is WebCamTexture2MatHelper webCamHelper)
-                webCamHelper.FlipHorizontal = webCamHelper.IsFrontFacing();
-
+            if (multiSourceToMatHelper.ActiveHelper is ICameraFacingToMatHelperControls cameraFacingControls)
+            {
+                multiSourceToMatHelper.ActiveHelper.FlipHorizontal = cameraFacingControls.IsFrontFacing;
+            }
 
             int patternWidth = (int)(Mathf.Min(rgbaMat.width(), rgbaMat.height()) * 0.8f);
 
             patternRect = new OpenCVForUnity.CoreModule.Rect(rgbaMat.width() / 2 - patternWidth / 2, rgbaMat.height() / 2 - patternWidth / 2, patternWidth, patternWidth);
+
+            if (!multiSourceToMatHelper.IsPlaying && !multiSourceToMatHelper.IsPaused)
+            {
+                multiSourceToMatHelper.Play();
+            }
         }
 
         /// <summary>
@@ -149,15 +160,30 @@ namespace MarkerLessARExample
         public void OnSourceToMatHelperDisposed()
         {
             Debug.Log("OnSourceToMatHelperDisposed");
+            DisposeFrameResources();
+        }
 
-            if (rgbMat != null)
+        /// <summary>
+        /// Raises the frame mat layout changed event.
+        /// </summary>
+        public void OnFrameMatLayoutChanged()
+        {
+            DisposeFrameResources();
+            OnSourceToMatHelperInitialized();
+        }
+
+        private void DisposeFrameResources()
+        {
+            if (texture != null)
             {
-                rgbMat.Dispose();
+                Destroy(texture);
+                texture = null;
             }
-            if (outputMat != null)
-            {
-                outputMat.Dispose();
-            }
+
+            rgbMat?.Dispose();
+            rgbMat = null;
+            outputMat?.Dispose();
+            outputMat = null;
         }
 
         /// <summary>
@@ -165,7 +191,7 @@ namespace MarkerLessARExample
         /// </summary>
         /// <param name="errorCode">Error code.</param>
         /// <param name="message">Message.</param>
-        public void OnSourceToMatHelperErrorOccurred(Source2MatHelperErrorCode errorCode, string message)
+        public void OnSourceToMatHelperErrorOccurred(SourceToMatErrorCode errorCode, string message)
         {
             Debug.Log("OnSourceToMatHelperErrorOccurred " + errorCode + ":" + message);
 
@@ -176,36 +202,43 @@ namespace MarkerLessARExample
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
-            if (multiSource2MatHelper.IsPlaying() && multiSource2MatHelper.DidUpdateThisFrame())
+            if (multiSourceToMatHelper.IsPlaying && multiSourceToMatHelper.DidUpdateThisFrame)
             {
-                Mat rgbaMat = multiSource2MatHelper.GetMat();
+                Mat rgbaMat = multiSourceToMatHelper.FrameMat;
 
                 Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB);
                 Imgproc.cvtColor(rgbaMat, outputMat, Imgproc.COLOR_RGBA2RGB);
 
                 detector.detect(rgbMat, keypoints);
                 //Debug.Log ("keypoints.ToString() " + keypoints.ToString());
-                Features2d.drawKeypoints(rgbMat, keypoints, rgbMat, Scalar.all(-1));
-
+                Features.drawKeypoints(rgbMat, keypoints, rgbMat, Scalar.all(-1));
 
                 Imgproc.rectangle(rgbMat, patternRect.tl(), patternRect.br(), new Scalar(255, 0, 0, 255), 5);
 
-                OpenCVMatUtils.MatToTexture2D(rgbMat, texture);
+                OpenCVMatUnityUtils.MatToTexture2D(rgbMat, texture);
             }
         }
 
         /// <summary>
         /// Raises the destroy event.
         /// </summary>
-        void OnDestroy()
+        private void OnDestroy()
         {
-            multiSource2MatHelper.Dispose();
+            if (patternPreviewTexture != null)
+            {
+                Destroy(patternPreviewTexture);
+                patternPreviewTexture = null;
+            }
 
-            detector.Dispose();
+            detector?.Dispose();
+            detector = null;
             if (keypoints != null)
+            {
                 keypoints.Dispose();
+                keypoints = null;
+            }
 
             //Utils.setDebugMode(false);
         }
@@ -223,7 +256,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnPlayButtonClick()
         {
-            multiSource2MatHelper.Play();
+            multiSourceToMatHelper.Play();
         }
 
         /// <summary>
@@ -231,7 +264,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnPauseButtonClick()
         {
-            multiSource2MatHelper.Pause();
+            multiSourceToMatHelper.Pause();
         }
 
         /// <summary>
@@ -239,7 +272,7 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnStopButtonClick()
         {
-            multiSource2MatHelper.Stop();
+            multiSourceToMatHelper.Stop();
         }
 
         /// <summary>
@@ -247,7 +280,10 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnChangeCameraButtonClick()
         {
-            multiSource2MatHelper.RequestedIsFrontFacing = !multiSource2MatHelper.RequestedIsFrontFacing;
+            if (multiSourceToMatHelper.ActiveHelper is ICameraFacingToMatHelperControls cameraFacingControls)
+            {
+                cameraFacingControls.RequestedIsFrontFacing = !cameraFacingControls.RequestedIsFrontFacing;
+            }
         }
 
         /// <summary>
@@ -264,11 +300,17 @@ namespace MarkerLessARExample
                 return;
             }
 
-            Texture2D patternTexture = new Texture2D(patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
+            if (patternPreviewTexture != null)
+            {
+                Destroy(patternPreviewTexture);
+                patternPreviewTexture = null;
+            }
 
-            OpenCVMatUtils.MatToTexture2D(patternMat, patternTexture);
+            patternPreviewTexture = new Texture2D(patternMat.width(), patternMat.height(), TextureFormat.RGBA32, false);
 
-            patternRawImage.texture = patternTexture;
+            OpenCVMatUnityUtils.MatToTexture2D(patternMat, patternPreviewTexture);
+
+            patternRawImage.texture = patternPreviewTexture;
 
             patternRawImage.gameObject.SetActive(true);
         }
@@ -278,11 +320,10 @@ namespace MarkerLessARExample
         /// </summary>
         public void OnSaveButtonClick()
         {
-            if (patternRawImage.texture != null)
+            if (patternPreviewTexture != null)
             {
-                Texture2D patternTexture = (Texture2D)patternRawImage.texture;
                 Mat patternMat = new Mat(patternRect.size(), CvType.CV_8UC3);
-                OpenCVMatUtils.Texture2DToMat(patternTexture, patternMat);
+                OpenCVMatUnityUtils.Texture2DToMat(patternPreviewTexture, patternMat);
                 Imgproc.cvtColor(patternMat, patternMat, Imgproc.COLOR_RGB2BGR);
 
                 string savePath = Application.persistentDataPath;
@@ -290,7 +331,7 @@ namespace MarkerLessARExample
 
                 Imgcodecs.imwrite(savePath + "/patternImg.jpg", patternMat);
 
-                if (GraphicsSettings.defaultRenderPipeline == null)
+                if (GraphicsSettings.currentRenderPipeline == null)
                 {
                     SceneManager.LoadScene("MultiSourceMarkerLessARExample_Built-in");
                 }

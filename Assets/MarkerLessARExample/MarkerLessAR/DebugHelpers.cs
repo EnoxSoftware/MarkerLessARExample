@@ -1,7 +1,7 @@
-using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.Features2dModule;
-using OpenCVForUnity.UnityIntegration;
 using System.Collections.Generic;
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.FeaturesModule;
+using OpenCVForUnity.UnityIntegration;
 using UnityEngine;
 
 namespace OpenCVMarkerLessAR
@@ -13,13 +13,13 @@ namespace OpenCVMarkerLessAR
     public class DebugHelpers : MonoBehaviour
     {
         // Use this for initialization
-        void Start()
+        private void Start()
         {
 
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
 
         }
@@ -28,7 +28,7 @@ namespace OpenCVMarkerLessAR
         {
             Texture2D texture = new Texture2D(mat.cols(), mat.rows(), TextureFormat.RGBA32, false);
 
-            OpenCVMatUtils.MatToTexture2D(mat, texture);
+            OpenCVMatUnityUtils.MatToTexture2D(mat, texture);
 
             gameObject.transform.localScale = new Vector3(texture.width, texture.height, 1);
             gameObject.GetComponent<Renderer>().material.mainTexture = texture;
@@ -49,7 +49,7 @@ namespace OpenCVMarkerLessAR
             MatOfDMatch tmpMatches = new MatOfDMatch();
             tmpMatches.fromList(matchesList);
 
-            Features2d.drawMatches
+            Features.drawMatches
             (
                 query,
                 queryKp,

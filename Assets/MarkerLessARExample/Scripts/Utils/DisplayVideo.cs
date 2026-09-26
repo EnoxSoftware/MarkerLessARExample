@@ -1,10 +1,10 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityIntegration;
 using OpenCVForUnity.VideoioModule;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using VideoCapture = OpenCVForUnity.VideoioModule.VideoCapture;
 
@@ -23,34 +23,34 @@ namespace MarkerLessARExample
         /// <summary>
         /// The video capture.
         /// </summary>
-        VideoCapture capture;
+        private VideoCapture capture;
 
         /// <summary>
         /// The rgb mat.
         /// </summary>
-        Mat rgbMat;
+        private Mat rgbMat;
 
         /// <summary>
         /// The colors.
         /// </summary>
-        Color32[] colors;
+        private Color32[] colors;
 
         /// <summary>
         /// The texture.
         /// </summary>
-        Texture2D texture;
+        private Texture2D texture;
 
         /// <summary>
         /// Indicates whether the video is playing.
         /// </summary>
-        bool isPlaying = false;
+        private bool isPlaying = false;
 
 #if UNITY_WEBGL
         IEnumerator getFilePath_Coroutine;
 #endif
 
         // Use this for initialization
-        void Start()
+        private void Start()
         {
             capture = new VideoCapture();
 
@@ -67,7 +67,7 @@ namespace MarkerLessARExample
             });
             StartCoroutine(getFilePath_Coroutine);
 #else
-            capture.open(OpenCVEnv.GetFilePath(fileName));
+            capture.open(OpenCVForUnityEnv.GetFilePath(fileName));
             Init();
 #endif
         }
@@ -97,7 +97,6 @@ namespace MarkerLessARExample
                 gameObject.transform.localScale = new Vector3(-((float)rgbMat.cols() / (float)rgbMat.rows()), -1, -1);
                 capture.set(Videoio.CAP_PROP_POS_FRAMES, 0);
 
-
                 gameObject.GetComponent<Renderer>().material.mainTexture = texture;
 
                 isPlaying = true;
@@ -106,20 +105,19 @@ namespace MarkerLessARExample
             {
                 Debug.Log("capture.isOpened() false");
             }
-
-
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
             if (isPlaying)
             {
 
-
                 //Loop play
                 if (capture.get(Videoio.CAP_PROP_POS_FRAMES) >= capture.get(Videoio.CAP_PROP_FRAME_COUNT))
+                {
                     capture.set(Videoio.CAP_PROP_POS_FRAMES, 0);
+                }
 
                 if (capture.grab())
                 {
@@ -127,7 +125,7 @@ namespace MarkerLessARExample
 
                     Imgproc.cvtColor(rgbMat, rgbMat, Imgproc.COLOR_BGR2RGB);
 
-                    OpenCVMatUtils.MatToTexture2D(rgbMat, texture, colors);
+                    OpenCVMatUnityUtils.MatToTexture2D(rgbMat, texture, colors);
                 }
             }
         }
@@ -135,14 +133,18 @@ namespace MarkerLessARExample
         /// <summary>
         /// Raises the destroy event.
         /// </summary>
-        void OnDestroy()
+        private void OnDestroy()
         {
 
             if (capture != null)
+            {
                 capture.release();
+            }
 
             if (rgbMat != null)
+            {
                 rgbMat.Dispose();
+            }
 
 #if UNITY_WEBGL
             if (getFilePath_Coroutine != null)

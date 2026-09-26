@@ -1,5 +1,6 @@
-using OpenCVForUnity.Calib3dModule;
 using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.Extensions;
+using OpenCVForUnity.GeometryModule;
 using OpenCVForUnity.UnityIntegration;
 using OpenCVMarkerLessAR;
 using UnityEngine;
@@ -45,25 +46,23 @@ namespace MarkerLessARExample
         public GameObject ARGameObject;
 
         // Use this for initialization
-        void Start()
+        private void Start()
         {
             Mat patternMat = new Mat(patternTexture.height, patternTexture.width, CvType.CV_8UC4);
 
-            OpenCVMatUtils.Texture2DToMat(patternTexture, patternMat);
+            OpenCVMatUnityUtils.Texture2DToMat(patternTexture, patternMat);
             Debug.Log("patternMat dst ToString " + patternMat.ToString());
 
             patternRawImage.texture = patternTexture;
             patternRawImage.rectTransform.localScale = new Vector3(1.0f, (float)patternMat.height() / (float)patternMat.width(), 1.0f);
 
-
             Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC4);
 
-            OpenCVMatUtils.Texture2DToMat(imgTexture, imgMat);
+            OpenCVMatUnityUtils.Texture2DToMat(imgTexture, imgMat);
             Debug.Log("imgMat dst ToString " + imgMat.ToString());
 
             gameObject.transform.localScale = new Vector3(imgTexture.width, imgTexture.height, 1);
             Debug.Log("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
-
 
             float width = imgMat.width();
             float height = imgMat.height();
@@ -80,7 +79,6 @@ namespace MarkerLessARExample
             {
                 Camera.main.orthographicSize = height / 2;
             }
-
 
             //set cameraparam
             int max_d = (int)Mathf.Max(width, height);
@@ -100,10 +98,8 @@ namespace MarkerLessARExample
             camMatrix.put(2, 2, 1.0f);
             Debug.Log("camMatrix " + camMatrix.dump());
 
-
             MatOfDouble distCoeffs = new MatOfDouble(0, 0, 0, 0);
             Debug.Log("distCoeffs " + distCoeffs.dump());
-
 
             //calibration camera
             Size imageSize = new Size(width * imageSizeScale, height * imageSizeScale);
@@ -115,7 +111,7 @@ namespace MarkerLessARExample
             Point principalPoint = new Point(0, 0);
             double[] aspectratio = new double[1];
 
-            Calib3d.calibrationMatrixValues(camMatrix, imageSize, apertureWidth, apertureHeight, fovx, fovy, focalLength, principalPoint, aspectratio);
+            Geometry.calibrationMatrixValues(camMatrix, imageSize, apertureWidth, apertureHeight, fovx, fovy, focalLength, principalPoint, aspectratio);
 
             Debug.Log("imageSize " + imageSize.ToString());
             Debug.Log("apertureWidth " + apertureWidth);
@@ -126,14 +122,12 @@ namespace MarkerLessARExample
             Debug.Log("principalPoint " + principalPoint.ToString());
             Debug.Log("aspectratio " + aspectratio[0]);
 
-
-            //To convert the difference of the FOV value of the OpenCV and Unity. 
+            //To convert the difference of the FOV value of the OpenCV and Unity.
             double fovXScale = (2.0 * Mathf.Atan((float)(imageSize.width / (2.0 * fx)))) / (Mathf.Atan2((float)cx, (float)fx) + Mathf.Atan2((float)(imageSize.width - cx), (float)fx));
             double fovYScale = (2.0 * Mathf.Atan((float)(imageSize.height / (2.0 * fy)))) / (Mathf.Atan2((float)cy, (float)fy) + Mathf.Atan2((float)(imageSize.height - cy), (float)fy));
 
             Debug.Log("fovXScale " + fovXScale);
             Debug.Log("fovYScale " + fovYScale);
-
 
             //Adjust Unity Camera FOV https://github.com/opencv/opencv/commit/8ed1945ccd52501f5ab22bdec6aa1f91f1e2cfd4
             if (widthScale < heightScale)
@@ -144,8 +138,6 @@ namespace MarkerLessARExample
             {
                 ARCamera.fieldOfView = (float)(fovy[0] * fovYScale);
             }
-
-
 
             //Learning the feature points of the pattern image.
             Pattern pattern = new Pattern();
@@ -179,7 +171,6 @@ namespace MarkerLessARExample
                 Matrix4x4 invertYM = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(1, -1, 1));
                 Debug.Log("invertYM " + invertYM.ToString());
 
-
                 // right-handed coordinates system (OpenCV) to left-handed one (Unity)
                 // https://stackoverflow.com/questions/30234945/change-handedness-of-a-row-major-4x4-transformation-matrix
                 Matrix4x4 ARM = invertYM * transformationM * invertYM;
@@ -207,13 +198,13 @@ namespace MarkerLessARExample
 
             Texture2D texture = new Texture2D(imgMat.cols(), imgMat.rows(), TextureFormat.RGBA32, false);
 
-            OpenCVMatUtils.MatToTexture2D(imgMat, texture);
+            OpenCVMatUnityUtils.MatToTexture2D(imgMat, texture);
 
             gameObject.GetComponent<Renderer>().material.mainTexture = texture;
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
 
         }

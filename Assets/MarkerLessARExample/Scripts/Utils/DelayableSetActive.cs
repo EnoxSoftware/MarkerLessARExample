@@ -33,7 +33,9 @@ namespace MarkerLessARExample
                 }
 
                 if (gameObject.activeSelf && deactivateCoroutine == null)
+                {
                     deactivateCoroutine = StartCoroutine(DeactivateGameObject(delayTime));
+                }
             }
         }
 
